@@ -9,20 +9,6 @@
       ],
       "enabled": true,
       "type": "local"
-    },
-    "blender": {
-      "command": [
-        "/home/andres/bin/blender-mcp"
-      ],
-      "enabled": true,
-      "type": "local"
-    },
-    "instantmesh": {
-      "command": [
-        "/home/andres/projects/instantmesh-mcp/bin/instantmesh-mcp"
-      ],
-      "enabled": true,
-      "type": "local"
     }
   },
   "agent": {
