@@ -14,7 +14,8 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  # Step 1: Determine version (no tag created yet)
+  version:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -36,14 +37,11 @@ jobs:
             VERSION="$NEW_VERSION"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Determined version: $VERSION"
 
-      - name: Create tag
-        run: |
-          git tag ${{ steps.version.outputs.version }}
-          git push origin ${{ steps.version.outputs.version }}
-
+  # Step 2: Build mi-config installers (parallel, no release created yet)
   build:
-    needs: release
+    needs: version
     strategy:
       matrix:
         include:
@@ -88,13 +86,15 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: installer/${{ matrix.artifact }}
-          tag_name: ${{ needs.release.outputs.version }}
+          tag_name: ${{ needs.version.outputs.version }}
           generate_release_notes: true
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Step 3: Build engram from fork (parallel)
   build-engram:
-    needs: release
+    needs: version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout engram fork
@@ -115,22 +115,22 @@ jobs:
           go mod tidy
           
           # Linux AMD64
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_linux_amd64 ./cmd/engram
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_linux_amd64 ./cmd/engram
           
           # Linux ARM64
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_linux_arm64 ./cmd/engram
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_linux_arm64 ./cmd/engram
           
           # macOS AMD64
-          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_darwin_amd64 ./cmd/engram
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_darwin_amd64 ./cmd/engram
           
           # macOS ARM64
-          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_darwin_arm64 ./cmd/engram
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_darwin_arm64 ./cmd/engram
           
           # Windows AMD64
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_windows_amd64.exe ./cmd/engram
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_windows_amd64.exe ./cmd/engram
           
           # Windows ARM64
-          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_windows_arm64.exe ./cmd/engram
+          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_windows_arm64.exe ./cmd/engram
           
           # Install zip for Windows archives
           apt-get update && apt-get install -y zip
@@ -153,6 +153,29 @@ jobs:
             engram/engram_darwin_arm64.tar.gz
             engram/engram_windows_amd64.zip
             engram/engram_windows_arm64.zip
-          tag_name: ${{ needs.release.outputs.version }}
+          tag_name: ${{ needs.version.outputs.version }}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Step 4: Create tag and publish release (ONLY if ALL builds succeed)
+  create-release:
+    needs: [version, build, build-engram]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ needs.version.outputs.version }}
+          git push origin ${{ needs.version.outputs.version }}
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version.outputs.version }}
+          draft: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
