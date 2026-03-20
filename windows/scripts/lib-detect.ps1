@@ -140,5 +140,3 @@ Examples:
 
 "@
 }
-
-Export-ModuleMember -Function *
