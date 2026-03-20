@@ -25,10 +25,10 @@
 ### Windows (PowerShell)
 
 ```powershell
-# Option 1: One-liner (PowerShell 7+)
-irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/install.ps1 | iex
+# Option 1: One-liner (recommended)
+irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/bootstrap.ps1 | iex
 
-# Option 2: Manual
+# Option 2: Full installer (after cloning)
 git clone https://github.com/Andressc19/mi-config.git
 cd mi-config\windows
 .\install.ps1 -All
