@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 type StepError struct {
@@ -30,6 +32,8 @@ func executeStep(stepID string, m *Model) error {
 		return stepInstallShell(m)
 	case "devtools":
 		return stepInstallDevTools(m)
+	case "engram-migrate":
+		return stepEngramMigrate(m)
 	default:
 		return fmt.Errorf("unknown step: %s", stepID)
 	}
@@ -309,4 +313,94 @@ func commandExists(cmd string) bool {
 		return true
 	}
 	return false
+}
+
+func stepEngramMigrate(m *Model) error {
+	stepID := "engram-migrate"
+
+	sourcePath := m.Choices.EngramSourcePath
+	if sourcePath == "" {
+		engramInfo := m.SystemInfo.Engram
+		if engramInfo.HasEngram {
+			sourcePath = engramInfo.EngramPath
+		} else if engramInfo.HasBackup {
+			sourcePath = engramInfo.BackupPath
+		}
+	}
+
+	if sourcePath == "" {
+		SendLog(stepID, "No Engram installation or backup found, skipping...")
+		return nil
+	}
+
+	SendLog(stepID, fmt.Sprintf("Migrating Engram from: %s", sourcePath))
+
+	isWSLPath := strings.HasPrefix(sourcePath, `\\wsl$`) || strings.Contains(sourcePath, "/mnt/c/")
+	isWindowsToWSL := runtime.GOOS == "linux" && m.SystemInfo.IsWSL && strings.Contains(sourcePath, "/mnt/c/")
+
+	if isWSLPath || isWindowsToWSL {
+		SendLog(stepID, "Detected cross-OS migration, copying files...")
+		tempDir := os.TempDir()
+		tempPath := filepath.Join(tempDir, "engram-migrate-temp")
+		os.MkdirAll(tempPath, 0755)
+
+		var copyCmd string
+		if isWSLPath {
+			copyCmd = fmt.Sprintf("cp \"%s\" \"%s/\" 2>/dev/null || cp %s/* \"%s/\" 2>/dev/null || true", sourcePath, tempPath, filepath.Dir(sourcePath), tempPath)
+		} else {
+			copyCmd = fmt.Sprintf("cp -r %s \"%s/\"", sourcePath, tempPath)
+		}
+		runCommand(copyCmd)
+
+		sourcePath = tempPath
+	}
+
+	if !commandExists("engram") {
+		SendLog(stepID, "Installing Engram CLI first...")
+		installCmd := "go install github.com/anomalyco/engram/cmd/engram@latest"
+		if err := runCommand(installCmd); err != nil {
+			SendLog(stepID, fmt.Sprintf("Warning: Could not install Engram CLI: %v", err))
+		}
+	}
+
+	SendLog(stepID, "Importing Engram data...")
+	importCmd := fmt.Sprintf("engram import \"%s\"", sourcePath)
+	if err := runCommand(importCmd); err != nil {
+		SendLog(stepID, fmt.Sprintf("Warning: Import may have had issues: %v", err))
+	}
+
+	sessionCount := countEngramItems(sourcePath, "sessions")
+	obsCount := countEngramItems(sourcePath, "observations")
+	SendLog(stepID, fmt.Sprintf("✓ Engram migration complete: %d sessions, %d observations imported", sessionCount, obsCount))
+
+	return nil
+}
+
+func countEngramItems(path string, itemType string) int {
+	if _, err := os.Stat(path); err != nil {
+		return 0
+	}
+
+	switch itemType {
+	case "sessions":
+		if files, err := filepath.Glob(filepath.Join(path, "*.session*")); err == nil {
+			return len(files)
+		}
+	case "observations":
+		if files, err := filepath.Glob(filepath.Join(path, "*.obs*")); err == nil {
+			return len(files)
+		}
+	}
+
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return 0
+	}
+	count := 0
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			count++
+		}
+	}
+	return count
 }

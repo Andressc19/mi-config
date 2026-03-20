@@ -15,6 +15,7 @@ const (
 	ScreenMainMenu
 	ScreenOSSelect
 	ScreenOptions
+	ScreenEngramMigrate
 	ScreenInstalling
 	ScreenComplete
 	ScreenError
@@ -40,17 +41,28 @@ const (
 )
 
 type ComponentSelection struct {
-	Opencode bool
-	LazyVim  bool
-	Docker   bool
-	Shell    bool
-	DevTools bool
+	Opencode       bool
+	LazyVim       bool
+	Docker        bool
+	Shell         bool
+	DevTools      bool
+	EngramMigrate bool
 }
 
+type EngramMigrateChoice int
+
+const (
+	EngramMigrateImportDetected EngramMigrateChoice = iota
+	EngramMigrateSkip
+	EngramMigrateManual
+)
+
 type UserChoices struct {
-	OS         string
-	Component  ComponentSelection
-	CreateBackup bool
+	OS               string
+	Component        ComponentSelection
+	CreateBackup     bool
+	EngramChoice     EngramMigrateChoice
+	EngramSourcePath string
 }
 
 type Model struct {
@@ -155,6 +167,7 @@ func (m Model) GetCurrentOptions() []string {
 			"🐳 Docker",
 			"🐚 Shell (PowerShell + oh-my-posh)",
 			"🔧 DevTools (Git, VS Code, etc)",
+			"💾 Engram Migration",
 		}
 	default:
 		return []string{}
@@ -171,6 +184,8 @@ func (m Model) GetScreenTitle() string {
 		return "Step 1: Select Your Operating System"
 	case ScreenOptions:
 		return "Step 2: Choose Components to Install"
+	case ScreenEngramMigrate:
+		return "Step 3: Migrate Engram"
 	case ScreenInstalling:
 		return "Installing..."
 	case ScreenComplete:
@@ -238,6 +253,15 @@ func (m *Model) SetupInstallSteps() {
 			ID:          "devtools",
 			Name:        "Install DevTools",
 			Description: "Git, VS Code, etc",
+			Status:      StatusPending,
+		})
+	}
+
+	if m.Choices.Component.EngramMigrate {
+		m.Steps = append(m.Steps, InstallStep{
+			ID:          "engram-migrate",
+			Name:        "Migrate Engram",
+			Description: "Importing from backup",
 			Status:      StatusPending,
 		})
 	}

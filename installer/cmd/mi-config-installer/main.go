@@ -21,6 +21,7 @@ type cliFlags struct {
 	docker         bool
 	shell          bool
 	devtools       bool
+	engramMigrate  bool
 }
 
 func parseFlags() *cliFlags {
@@ -38,6 +39,7 @@ func parseFlags() *cliFlags {
 	flag.BoolVar(&flags.docker, "docker", false, "Install Docker")
 	flag.BoolVar(&flags.shell, "shell", false, "Install Shell (PowerShell + oh-my-posh)")
 	flag.BoolVar(&flags.devtools, "devtools", false, "Install DevTools (Git, VS Code)")
+	flag.BoolVar(&flags.engramMigrate, "engram-migrate", false, "Migrate Engram from backup")
 
 	flag.Parse()
 	return flags
@@ -62,28 +64,30 @@ func main() {
 	}
 
 	if flags.nonInteractive {
-		if !flags.opencode && !flags.lazvim && !flags.docker && !flags.shell && !flags.devtools {
-			fmt.Fprintf(os.Stderr, "Error: at least one component must be selected (--opencode, --lazvim, --docker, --shell, --devtools)\n")
+		if !flags.opencode && !flags.lazvim && !flags.docker && !flags.shell && !flags.devtools && !flags.engramMigrate {
+			fmt.Fprintf(os.Stderr, "Error: at least one component must be selected (--opencode, --lazvim, --docker, --shell, --devtools, --engram-migrate)\n")
 			os.Exit(1)
 		}
 
 		choices := tui.UserChoices{
 			Component: tui.ComponentSelection{
-				Opencode: flags.opencode,
-				LazyVim:  flags.lazvim,
-				Docker:   flags.docker,
-				Shell:    flags.shell,
-				DevTools: flags.devtools,
+				Opencode:       flags.opencode,
+				LazyVim:        flags.lazvim,
+				Docker:         flags.docker,
+				Shell:          flags.shell,
+				DevTools:       flags.devtools,
+				EngramMigrate: flags.engramMigrate,
 			},
 		}
 
 		fmt.Println("🚀 mi-config Non-Interactive Installer")
 		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-		fmt.Printf("  opencode:  %v\n", choices.Component.Opencode)
-		fmt.Printf("  LazyVim:   %v\n", choices.Component.LazyVim)
-		fmt.Printf("  Docker:    %v\n", choices.Component.Docker)
-		fmt.Printf("  Shell:     %v\n", choices.Component.Shell)
-		fmt.Printf("  DevTools:  %v\n", choices.Component.DevTools)
+		fmt.Printf("  opencode:        %v\n", choices.Component.Opencode)
+		fmt.Printf("  LazyVim:         %v\n", choices.Component.LazyVim)
+		fmt.Printf("  Docker:          %v\n", choices.Component.Docker)
+		fmt.Printf("  Shell:           %v\n", choices.Component.Shell)
+		fmt.Printf("  DevTools:        %v\n", choices.Component.DevTools)
+		fmt.Printf("  Engram Migrate:  %v\n", choices.Component.EngramMigrate)
 		fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 		fmt.Println()
 
@@ -132,6 +136,7 @@ Non-Interactive Options:
   --docker             Install Docker
   --shell              Install Shell (PowerShell + oh-my-posh)
   --devtools           Install DevTools (Git, VS Code)
+  --engram-migrate     Migrate Engram from existing installation/backup
 
 Examples:
   # Interactive TUI
@@ -140,8 +145,8 @@ Examples:
   # Non-interactive with all components
   mi-config-installer --non-interactive --opencode --lazvim --docker --shell --devtools
 
-  # Non-interactive with specific components
-  mi-config-installer --non-interactive --opencode --nvim
+  # Non-interactive with Engram migration
+  mi-config-installer --non-interactive --opencode --engram-migrate
 
   # Dry-run mode
   mi-config-installer --dry-run --opencode
