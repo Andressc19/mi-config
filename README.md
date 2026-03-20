@@ -1,6 +1,6 @@
 # mi-config
 
-> 🚀 Instalador multiplataforma para tu entorno de desarrollo: opencode, Neovim/LazyVim, Docker, y más.
+> 🚀 Multi-platform installer for your development environment: opencode, Neovim/LazyVim, Docker, and more.
 
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20WSL-blue.svg)](https://github.com/Andressc19/mi-config)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -8,27 +8,27 @@
 
 ---
 
-## ✨ ¿Qué incluye?
+## ✨ What's included?
 
-| Herramienta | Descripción |
-|-------------|-------------|
-| **opencode** | Asistente IA con memoria persistente (Engram), SDD skills, e integraciones MCP |
-| **LazyVim** | Configuración opinionada de Neovim con tema Tokyo Night y 30+ plugins |
-| **Docker Stack** | Docker, Colima, LazyDocker para gestión de contenedores |
-| **Shell Setup** | Bash-it, Oh-My-Zsh, Oh-My-Posh para prompts modernos |
-| **Dev Tools** | Homebrew, NVM, SDKMAN para gestión de versiones |
+| Tool | Description |
+|------|-------------|
+| **opencode** | AI assistant with persistent memory (Engram), SDD skills, and MCP integrations |
+| **LazyVim** | Opinionated Neovim config with Tokyo Night theme and 30+ plugins |
+| **Docker Stack** | Docker, Colima, LazyDocker for container management |
+| **Shell Setup** | Bash-it, Oh-My-Zsh, Oh-My-Posh for modern prompts |
+| **Dev Tools** | Homebrew, NVM, SDKMAN for version management |
 
 ---
 
-## ⚡ Instalación rápida
+## ⚡ Quick Install
 
 ### Windows (PowerShell)
 
 ```powershell
-# Opción 1: One-liner (PowerShell 7+)
+# Option 1: One-liner (PowerShell 7+)
 irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/install.ps1 | iex
 
-# Opción 2: Manual
+# Option 2: Manual
 git clone https://github.com/Andressc19/mi-config.git
 cd mi-config\windows
 .\install.ps1 -All
@@ -37,10 +37,10 @@ cd mi-config\windows
 ### Linux / macOS / WSL
 
 ```bash
-# Opción 1: One-liner
+# Option 1: One-liner
 curl -fsSL https://raw.githubusercontent.com/Andressc19/mi-config/main/install.sh | bash -s -- --all
 
-# Opción 2: Manual
+# Option 2: Manual
 git clone https://github.com/Andressc19/mi-config.git
 cd mi-config
 chmod +x install.sh
@@ -49,10 +49,10 @@ chmod +x install.sh
 
 ---
 
-## 📋 Plataformas soportadas
+## 📋 Supported Platforms
 
-| Plataforma | Estado | Instalador |
-|-------------|--------|-------------|
+| Platform | Status | Installer |
+|----------|--------|-------------|
 | Windows Native | ✅ | `windows/install.ps1` |
 | macOS | ✅ | `install.sh` (Bash) |
 | Linux (Ubuntu/Debian/Fedora) | ✅ | `install.sh` (Bash) |
@@ -60,68 +60,68 @@ chmod +x install.sh
 
 ---
 
-## 🎯 Instalación selectiva
+## 🎯 Selective Installation
 
 ### Linux / macOS / WSL
 
 ```bash
-# Solo opencode
+# opencode only
 ./install.sh --opencode
 
-# Solo Neovim
+# Neovim only
 ./install.sh --nvim
 
-# Solo Docker
+# Docker only
 ./install.sh --docker
 
-# Multiple componentes
+# Multiple components
 ./install.sh --opencode --nvim --docker
 
-# Preview (no ejecuta)
+# Preview (no execution)
 ./install.sh --all --dry-run
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-# Solo opencode
+# opencode only
 .\install.ps1 -Opencode
 
-# Solo Neovim
+# Neovim only
 .\install.ps1 -Nvim
 
-# Multiple componentes
+# Multiple components
 .\install.ps1 -Opencode -Nvim -Docker
 
-# Preview (no ejecuta)
+# Preview (no execution)
 .\install.ps1 -All -DryRun
 ```
 
-### Flags disponibles
+### Available Flags
 
-| Flag | Descripción |
+| Flag | Description |
 |------|-------------|
-| `--all` / `-All` | Instalar todo |
+| `--all` / `-All` | Install everything |
 | `--opencode` / `-Opencode` | opencode + Engram + skills |
 | `--nvim` / `-Nvim` | Neovim + LazyVim |
 | `--docker` / `-Docker` | Docker + LazyDocker |
-| `--shell` / `-Shell` | Configuración de shell |
+| `--shell` / `-Shell` | Shell configuration |
 | `--devtools` / `-DevTools` | Git, Python, Node, etc |
-| `--link` / `-Link` | Copiar/vincular configs |
-| `--dry-run` / `-DryRun` | Preview sin ejecutar |
-| `--help` / `-Help` | Mostrar ayuda |
+| `--link` / `-Link` | Copy/link configs |
+| `--dry-run` / `-DryRun` | Preview without executing |
+| `--help` / `-Help` | Show help |
 
 ---
 
-## 🛠️ Requisitos
+## 🛠️ Requirements
 
 ### Windows
-- PowerShell 7+ (o 5.1)
+- PowerShell 7+ (or 5.1)
 - Git
-- Un package manager: **winget**, **scoop**, o **chocolatey**
+- A package manager: **winget**, **scoop**, or **chocolatey**
 
 ### Linux / macOS / WSL
-- `curl` o `wget`
+- `curl` or `wget`
 - `git`
 - `bash` 4.0+
 
@@ -129,13 +129,13 @@ chmod +x install.sh
 - [Homebrew](https://brew.sh)
 
 ### WSL
-- Docker Desktop para Windows (con integración WSL2)
+- Docker Desktop for Windows (with WSL2 integration)
 
 ---
 
-## 💾 Backup de Engram
+## 💾 Engram Backup
 
-Engram es la memoria persistente de opencode. Para respaldarla:
+Engram is opencode's persistent memory. To back it up:
 
 ### Linux / macOS / WSL
 
@@ -153,30 +153,30 @@ Engram es la memoria persistente de opencode. Para respaldarla:
 .\windows\scripts\backup-engram.ps1 -Stats
 ```
 
-Los backups se guardan en:
+Backups are saved to:
 - **Linux/WSL**: `~/engram-backups/`
 - **Windows**: `%USERPROFILE%\engram-backups\`
 
 ---
 
-## 📁 Estructura del proyecto
+## 📁 Project Structure
 
 ```
 mi-config/
-├── install.sh                    # Instalador principal (Bash)
+├── install.sh                    # Main installer (Bash)
 ├── scripts/
-│   ├── lib-detect.sh             # Utilidades de detección
+│   ├── lib-detect.sh             # Detection utilities
 │   ├── install-opencode.sh       # opencode + Engram
 │   ├── install-neovim.sh         # LazyVim
 │   ├── install-docker.sh         # Docker + Colima
 │   ├── install-shell.sh          # Shell configs
 │   ├── install-devtools.sh       # Dev tools
-│   ├── backup-engram.sh          # Backup de Engram
-│   └── link-configs.sh           # Vincular configs
+│   ├── backup-engram.sh          # Engram backup
+│   └── link-configs.sh           # Link configs
 ├── windows/
-│   ├── install.ps1               # Instalador Windows (PowerShell)
+│   ├── install.ps1               # Windows installer (PowerShell)
 │   ├── scripts/
-│   │   ├── lib-detect.ps1        # Utilidades de detección
+│   │   ├── lib-detect.ps1        # Detection utilities
 │   │   ├── install-opencode.ps1
 │   │   ├── install-neovim.ps1
 │   │   ├── install-docker.ps1
@@ -184,25 +184,25 @@ mi-config/
 │   │   ├── install-devtools.ps1
 │   │   ├── backup-engram.ps1
 │   │   └── link-configs.ps1
-│   └── configs/                  # Configs específicas de Windows
+│   └── configs/                  # Windows-specific configs
 ├── configs/
-│   ├── opencode/                 # Configuración de opencode
-│   ├── nvim/                     # Configuración de LazyVim
-│   ├── docker/                   # Configuración de Docker
-│   ├── bashrc                    # Configuración de Bash
-│   ├── zshrc                     # Configuración de Zsh
-│   └── profile                   # Profile shell
-├── Brewfile                      # Paquetes Homebrew
+│   ├── opencode/                 # opencode configuration
+│   ├── nvim/                     # LazyVim configuration
+│   ├── docker/                   # Docker configuration
+│   ├── bashrc                    # Bash configuration
+│   ├── zshrc                     # Zsh configuration
+│   └── profile                   # Shell profile
+├── Brewfile                      # Homebrew packages
 └── .github/
     └── workflows/
-        └── test-install.yml      # CI para pruebas
+        └── test-install.yml      # CI for testing
 ```
 
 ---
 
-## 🔧 Configuraciones instaladas
+## 🔧 Installed Configurations
 
-El instalador respalda tus configs actuales antes de instalar:
+The installer backs up your existing configs before installing:
 
 | Source | Destination |
 |--------|-------------|
@@ -213,21 +213,21 @@ El instalador respalda tus configs actuales antes de instalar:
 | `configs/opencode/*` | `~/.config/opencode/` |
 | `configs/docker/*` | `~/.config/lazydocker/` |
 
-> **Backup automático:** Los respaldos se guardan en `~/backup-config-{timestamp}/`
+> **Auto-backup:** Backups are saved to `~/backup-config-{timestamp}/`
 
 ---
 
-## 🐛 Solución de problemas
+## 🐛 Troubleshooting
 
-### Docker no inicia en Linux
+### Docker not starting on Linux
 
 ```bash
 sudo systemctl start docker
 sudo usermod -aG docker $USER
-# Cerrar sesión y volver a entrar
+# Log out and back in
 ```
 
-### Colima no inicia en macOS
+### Colima not starting on macOS
 
 ```bash
 colima stop
@@ -235,32 +235,32 @@ colima delete
 colima start
 ```
 
-### Plugins de Neovim no cargan
+### Neovim plugins not loading
 
 ```bash
 nvim --headless +Lazy! sync +qa
 ```
 
-### Windows: Error de ejecución de scripts
+### Windows: Script execution error
 
 ```powershell
-# Si PowerShell bloquea los scripts:
+# If PowerShell blocks scripts:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### WSL: Docker no responde
+### WSL: Docker not responding
 
 ```powershell
-# En PowerShell (Windows):
+# In PowerShell (Windows):
 Restart-Service Docker
-# O desde Docker Desktop
+# Or from Docker Desktop
 ```
 
 ---
 
-## 📚 Recursos
+## 📚 Resources
 
-- [Documentación de opencode](https://github.com/opencode-ai/opencode)
+- [opencode Documentation](https://github.com/opencode-ai/opencode)
 - [LazyVim](https://lazyvim.org)
 - [Engram](https://github.com/engramhq/engram)
 - [Homebrew](https://brew.sh)
@@ -268,22 +268,22 @@ Restart-Service Docker
 
 ---
 
-## 🤝 Contribuir
+## 🤝 Contributing
 
-1. Fork el repositorio
-2. Crea una rama (`git checkout -b feature/nueva-funcion`)
-3. Commit tus cambios (`git commit -am 'Agrega nueva función'`)
-4. Push a la rama (`git push origin feature/nueva-funcion`)
-5. Abre un Pull Request
+1. Fork the repository
+2. Create a branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-MIT License - ver [LICENSE](LICENSE) para más detalles.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 <p align="center">
-  Hecho con ❤️ por <a href="https://github.com/Andressc19">Andressc19</a>
+  Made with ❤️ by <a href="https://github.com/Andressc19">Andressc19</a>
 </p>
