@@ -1,0 +1,81 @@
+name: Test Installation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-dry-run:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: |
+          chmod +x install.sh
+          chmod +x scripts/*.sh
+
+      - name: Test dry-run
+        run: |
+          ./install.sh --all --dry-run
+
+      - name: Test individual components
+        run: |
+          ./install.sh --dry-run --opencode
+          ./install.sh --dry-run --nvim
+          ./install.sh --dry-run --docker
+          ./install.sh --dry-run --shell
+          ./install.sh --dry-run --devtools
+          ./install.sh --dry-run --link
+
+  test-linux:
+    runs-on: ubuntu-latest
+    needs: test-dry-run
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          chmod +x install.sh scripts/*.sh
+          sudo apt-get update
+          sudo apt-get install -y git curl
+
+      - name: Test opencode dry-run
+        run: ./install.sh --opencode --dry-run
+
+      - name: Test nvim dry-run
+        run: ./install.sh --nvim --dry-run
+
+      - name: Test docker dry-run
+        run: ./install.sh --docker --dry-run
+
+      - name: Test shell dry-run
+        run: ./install.sh --shell --dry-run
+
+      - name: Test devtools dry-run
+        run: ./install.sh --devtools --dry-run
+
+      - name: Test link dry-run
+        run: ./install.sh --link --dry-run
+
+  test-macos:
+    runs-on: macos-latest
+    needs: test-dry-run
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: |
+          chmod +x install.sh
+          chmod +x scripts/*.sh
+
+      - name: Test all dry-run
+        run: ./install.sh --all --dry-run

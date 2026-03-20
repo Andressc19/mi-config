@@ -1,0 +1,9 @@
+.DS_Store
+*.swp
+*.swo
+*~
+.backup/
+.backup-*/
+tmp/
+*.log
+node_modules/
