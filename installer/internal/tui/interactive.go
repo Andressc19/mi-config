@@ -126,6 +126,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case ScreenOptions:
+			s := msg.String()
 			switch msg.Type {
 			case tea.KeyUp:
 				if m.Cursor > 0 {
@@ -135,18 +136,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.Cursor < len(m.GetCurrentOptions())-1 {
 					m.Cursor++
 				}
-			case tea.KeySpace:
-				switch m.Cursor {
-				case 0:
-					m.Choices.Component.Opencode = !m.Choices.Component.Opencode
-				case 1:
-					m.Choices.Component.LazyVim = !m.Choices.Component.LazyVim
-				case 2:
-					m.Choices.Component.Docker = !m.Choices.Component.Docker
-				case 3:
-					m.Choices.Component.Shell = !m.Choices.Component.Shell
-				case 4:
-					m.Choices.Component.DevTools = !m.Choices.Component.DevTools
+			case tea.KeySpace, tea.KeyRunes:
+				// Toggle selection on Space or when space rune is received
+				if msg.Type == tea.KeySpace || s == " " {
+					switch m.Cursor {
+					case 0:
+						m.Choices.Component.Opencode = !m.Choices.Component.Opencode
+					case 1:
+						m.Choices.Component.LazyVim = !m.Choices.Component.LazyVim
+					case 2:
+						m.Choices.Component.Docker = !m.Choices.Component.Docker
+					case 3:
+						m.Choices.Component.Shell = !m.Choices.Component.Shell
+					case 4:
+						m.Choices.Component.DevTools = !m.Choices.Component.DevTools
+					}
 				}
 			case tea.KeyEnter:
 				hasSelection := m.Choices.Component.Opencode ||
