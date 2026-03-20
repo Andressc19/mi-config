@@ -63,6 +63,8 @@ Options:
     --shell        Install shell configurations (bash/zsh)
     --devtools     Install Homebrew, NVM, SDKMAN
     --link         Link config files (symlinks)
+    --engram           Install engram (from fork or upstream)
+    --engram-source    Choose source: fork or upstream (default: fork, or TUI if omitted)
     --dry-run      Show what would be installed without executing
     --help         Show this help message
 
@@ -72,4 +74,38 @@ Examples:
     $0 --dry-run --all         # Preview full installation
 
 EOF
+}
+
+get_engram_source() {
+    if [[ "$1" == "--fork" ]]; then
+        echo "fork"
+        return 0
+    fi
+
+    if [[ "$1" == "--upstream" ]]; then
+        echo "upstream"
+        return 0
+    fi
+
+    echo "Select engram source:"
+    echo "  1) fork"
+    echo "  2) upstream"
+    echo ""
+    read -p "Enter option (1/2/q): " option
+
+    case "$option" in
+        1) echo "fork" ;;
+        2) echo "upstream" ;;
+        q|Q) return 1 ;;
+        *) echo "upstream" ;;
+    esac
+}
+
+get_engram_repo_url() {
+    local source="$1"
+    case "$source" in
+        fork) echo "git@github.com:Andressc19/engram.git" ;;
+        upstream) echo "https://github.com/Gentleman-Programming/engram.git" ;;
+        *) echo "https://github.com/Gentleman-Programming/engram.git" ;;
+    esac
 }

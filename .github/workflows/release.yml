@@ -92,3 +92,64 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-engram:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout engram fork
+        uses: actions/checkout@v4
+        with:
+          repository: Andressc19/engram
+          path: engram
+          ref: main
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Build engram for all platforms
+        run: |
+          cd engram
+          go mod tidy
+          
+          # Linux AMD64
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_linux_amd64 ./cmd/engram
+          
+          # Linux ARM64
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_linux_arm64 ./cmd/engram
+          
+          # macOS AMD64
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_darwin_amd64 ./cmd/engram
+          
+          # macOS ARM64
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_darwin_arm64 ./cmd/engram
+          
+          # Windows AMD64
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_windows_amd64.exe ./cmd/engram
+          
+          # Windows ARM64
+          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_windows_arm64.exe ./cmd/engram
+          
+          # Create archives
+          tar -czf engram_linux_amd64.tar.gz engram_linux_amd64
+          tar -czf engram_linux_arm64.tar.gz engram_linux_arm64
+          tar -czf engram_darwin_amd64.tar.gz engram_darwin_amd64
+          tar -czf engram_darwin_arm64.tar.gz engram_darwin_arm64
+          powershell -Command "Compress-Archive engram_windows_amd64.exe engram_windows_amd64.zip"
+          powershell -Command "Compress-Archive engram_windows_arm64.exe engram_windows_arm64.zip"
+
+      - name: Upload engram binaries to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            engram/engram_linux_amd64.tar.gz
+            engram/engram_linux_arm64.tar.gz
+            engram/engram_darwin_amd64.tar.gz
+            engram/engram_darwin_arm64.tar.gz
+            engram/engram_windows_amd64.zip
+            engram/engram_windows_arm64.zip
+          tag_name: ${{ needs.release.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

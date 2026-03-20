@@ -6,6 +6,8 @@ param(
     [switch]$Shell,
     [switch]$Devtools,
     [switch]$Link,
+    [switch]$Engram,
+    [string]$EngramSource,
     [switch]$DryRun,
     [switch]$Help
 )
@@ -13,6 +15,7 @@ param(
 $ErrorActionPreference = "Stop"
 $SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $REPO_ROOT = (Get-Item $SCRIPT_DIR).Parent.FullName
+$Global:ENGRAM_SOURCE = "Fork"
 
 . "$SCRIPT_DIR\scripts\lib-detect.ps1"
 
@@ -26,6 +29,7 @@ function Get-UserSelection {
     Write-Host "  ║                                                           ║" -ForegroundColor Cyan
     Write-Host "  ║    [1] All components                                    ║" -ForegroundColor White
     Write-Host "  ║    [2] opencode + engram + skills + MCP                 ║" -ForegroundColor White
+    Write-Host "  ║    [E] Engram (persistent memory)                        ║" -ForegroundColor White
     Write-Host "  ║    [3] LazyVim (Neovim) + plugins                        ║" -ForegroundColor White
     Write-Host "  ║    [4] Docker Desktop                                    ║" -ForegroundColor White
     Write-Host "  ║    [5] Shell (PowerShell + oh-my-posh)                  ║" -ForegroundColor White
@@ -70,6 +74,23 @@ function Run-Install {
     & $SCRIPT_DIR\scripts\$Script
 }
 
+function Show-EngramSourceMenu {
+    Write-Host ""
+    Write-Host "  ╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "  ║              Engram Source Selection                     ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                           ║" -ForegroundColor Cyan
+    Write-Host "  ║  Select Engram source:                                    ║" -ForegroundColor Cyan
+    Write-Host "  ║                                                           ║" -ForegroundColor Cyan
+    Write-Host "  ║    [1] Fork (default - my configuration)                 ║" -ForegroundColor White
+    Write-Host "  ║    [2] Upstream (original repository)                      ║" -ForegroundColor White
+    Write-Host "  ║                                                           ║" -ForegroundColor White
+    Write-Host "  ╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    
+    $sourceSelection = Read-Host "Enter your choice (1-2)"
+    return $sourceSelection
+}
+
 function Main {
     if ($Help) {
         Show-Banner
@@ -80,7 +101,16 @@ function Main {
     Show-Banner
     Show-SystemInfo
 
-    if (-not $All -and -not $Opencode -and -not $Nvim -and -not $Docker -and -not $Shell -and -not $Devtools -and -not $Link) {
+    if ($Engram -and -not $EngramSource) {
+        $sourceSelection = Show-EngramSourceMenu
+        switch ($sourceSelection) {
+            "1" { $EngramSource = "Fork" }
+            "2" { $EngramSource = "Upstream" }
+            default { $EngramSource = "Fork" }
+        }
+    }
+
+    if (-not $All -and -not $Opencode -and -not $Nvim -and -not $Docker -and -not $Shell -and -not $Devtools -and -not $Link -and -not $Engram) {
         $selection = Get-UserSelection
         
         switch ($selection) {
@@ -91,6 +121,7 @@ function Main {
             "5" { $Shell = $true }
             "6" { $Devtools = $true }
             "7" { $Link = $true }
+            "e" { $Engram = $true }
             "q" { 
                 Write-Host "Exiting..." -ForegroundColor Yellow
                 return 
@@ -126,6 +157,16 @@ function Main {
 
     if ($Docker) {
         Run-Install "install-docker.ps1" "Docker stack"
+    }
+
+    if ($Engram) {
+        $source = if ($EngramSource) { $EngramSource } else { $ENGRAM_SOURCE }
+        $scriptPath = "$SCRIPT_DIR\scripts\install-engram.ps1"
+        if ($source -eq "Fork") {
+            & $scriptPath -Source Fork
+        } else {
+            & $scriptPath -Source Upstream
+        }
     }
 
     Write-Host ""
