@@ -215,48 +215,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Screen = ScreenOptions
 				m.Cursor = 0
 			}
-			case tea.KeyDown:
-				if m.Cursor < len(m.GetCurrentOptions())-1 {
-					m.Cursor++
-				}
-			case tea.KeySpace, tea.KeyRunes:
-				// Toggle selection on Space or when space rune is received
-				if msg.Type == tea.KeySpace || s == " " {
-					switch m.Cursor {
-					case 0:
-						m.Choices.Component.Opencode = !m.Choices.Component.Opencode
-					case 1:
-						m.Choices.Component.LazyVim = !m.Choices.Component.LazyVim
-					case 2:
-						m.Choices.Component.Docker = !m.Choices.Component.Docker
-					case 3:
-						m.Choices.Component.Shell = !m.Choices.Component.Shell
-					case 4:
-						m.Choices.Component.DevTools = !m.Choices.Component.DevTools
-					}
-				}
-			case tea.KeyEnter:
-				hasSelection := m.Choices.Component.Opencode ||
-					m.Choices.Component.LazyVim ||
-					m.Choices.Component.Docker ||
-					m.Choices.Component.Shell ||
-					m.Choices.Component.DevTools
-
-				if hasSelection {
-					m.SetupInstallSteps()
-					m.Screen = ScreenInstalling
-					m.CurrentStep = 0
-					if len(m.Steps) > 0 {
-						m.Steps[0].Status = StatusRunning
-						return m, m.startInstallation()
-					} else {
-						m.Screen = ScreenComplete
-					}
-				}
-			case tea.KeyEscape:
-				m.Screen = ScreenOSSelect
-				m.Cursor = 0
-			}
 
 		case ScreenInstalling:
 			if msg.Type == tea.KeyRunes && s == "d" {
