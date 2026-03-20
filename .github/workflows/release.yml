@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., 1.0.6) - leave empty for auto bump'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Auto bump patch version from last tag
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            VERSION="${LAST_TAG#v}"
+            IFS='.' read -r major minor patch <<< "$VERSION"
+            NEW_VERSION="v$major.$minor.$((patch + 1))"
+            VERSION="$NEW_VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          git tag ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }}
+
+  build:
+    needs: release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: mi-config-installer-linux-amd64
+            goos: linux
+            goarch: amd64
+          - os: macos-latest
+            artifact: mi-config-installer-darwin-amd64
+            goos: darwin
+            goarch: amd64
+          - os: macos-latest
+            artifact: mi-config-installer-darwin-arm64
+            goos: darwin
+            goarch: arm64
+          - os: windows-latest
+            artifact: mi-config-installer-windows.exe
+            goos: windows
+            goarch: amd64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          cd installer
+          go mod tidy
+          go build -ldflags="-s -w" -o ${{ matrix.artifact }} ./cmd/mi-config-installer
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: installer/${{ matrix.artifact }}
+          tag_name: ${{ needs.release.outputs.version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
