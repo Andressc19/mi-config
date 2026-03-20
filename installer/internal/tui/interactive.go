@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/mi-config/installer/internal/system"
@@ -69,22 +68,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		s := msg.String()
 		switch m.Screen {
 		case ScreenWelcome:
 			if msg.Type == tea.KeyEnter || msg.Type == tea.KeySpace {
 				m.Screen = ScreenMainMenu
 				m.Cursor = 0
-			} else if msg.Type == tea.KeyRunes && (msg.String() == "q" || msg.String() == "Q") {
+			} else if msg.Type == tea.KeyRunes && (s == "q" || s == "Q") {
 				m.Quitting = true
 			}
 
 		case ScreenMainMenu:
 			switch msg.Type {
-			case tea.KeyUp, tea.KeyK:
+			case tea.KeyUp:
 				if m.Cursor > 0 {
 					m.Cursor--
 				}
-			case tea.KeyDown, tea.KeyJ:
+			case tea.KeyDown:
 				if m.Cursor < len(m.GetCurrentOptions())-1 {
 					m.Cursor++
 				}
@@ -94,23 +94,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Screen = ScreenOSSelect
 					m.Cursor = 0
 				case 1:
-					// Learn - placeholder
 				case 2:
 					m.Quitting = true
 				}
 			case tea.KeyRunes:
-				if msg.String() == "q" || msg.String() == "Q" {
+				if s == "q" || s == "Q" {
 					m.Quitting = true
 				}
 			}
 
 		case ScreenOSSelect:
 			switch msg.Type {
-			case tea.KeyUp, tea.KeyK:
+			case tea.KeyUp:
 				if m.Cursor > 0 {
 					m.Cursor--
 				}
-			case tea.KeyDown, tea.KeyJ:
+			case tea.KeyDown:
 				if m.Cursor < len(m.GetCurrentOptions())-1 {
 					m.Cursor++
 				}
@@ -128,11 +127,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case ScreenOptions:
 			switch msg.Type {
-			case tea.KeyUp, tea.KeyK:
+			case tea.KeyUp:
 				if m.Cursor > 0 {
 					m.Cursor--
 				}
-			case tea.KeyDown, tea.KeyJ:
+			case tea.KeyDown:
 				if m.Cursor < len(m.GetCurrentOptions())-1 {
 					m.Cursor++
 				}
@@ -150,7 +149,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Choices.Component.DevTools = !m.Choices.Component.DevTools
 				}
 			case tea.KeyEnter:
-				// Check if at least one component is selected
 				hasSelection := m.Choices.Component.Opencode ||
 					m.Choices.Component.LazyVim ||
 					m.Choices.Component.Docker ||
@@ -174,25 +172,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case ScreenInstalling:
-			if msg.Type == tea.KeyRunes && msg.String() == "d" {
+			if msg.Type == tea.KeyRunes && s == "d" {
 				m.ShowDetails = !m.ShowDetails
 			}
 
 		case ScreenComplete:
-			if msg.Type == tea.KeyEnter || (msg.Type == tea.KeyRunes && (msg.String() == "q" || msg.String() == "Q")) {
+			if msg.Type == tea.KeyEnter || (msg.Type == tea.KeyRunes && (s == "q" || s == "Q")) {
 				m.Quitting = true
 			}
 
 		case ScreenError:
 			if msg.Type == tea.KeyRunes {
-				if msg.String() == "r" || msg.String() == "R" {
+				if s == "r" || s == "R" {
 					m.Screen = ScreenInstalling
 					m.CurrentStep = 0
 					if len(m.Steps) > 0 {
 						m.Steps[0].Status = StatusRunning
 						return m, m.startInstallation()
 					}
-				} else if msg.String() == "q" || msg.String() == "Q" {
+				} else if s == "q" || s == "Q" {
 					m.Quitting = true
 				}
 			}

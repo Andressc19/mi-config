@@ -88,6 +88,11 @@ func NewModel() Model {
 	}
 }
 
+// Init implements tea.Model - required method
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
 func (m *Model) SetProgram(p *tea.Program) {
 	m.Program = p
 }

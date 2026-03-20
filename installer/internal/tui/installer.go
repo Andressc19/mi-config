@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"runtime"
 )
 
@@ -284,16 +285,17 @@ func stepInstallDevTools(m *Model) error {
 }
 
 func runCommand(cmd string) error {
-	exec := os.Executable
+	var shell string
+	var shellArg string
 	if runtime.GOOS == "windows" {
-		exec = "cmd.exe"
-		cmd = "/c " + cmd
+		shell = "cmd.exe"
+		shellArg = "/c"
 	} else {
-		exec = "/bin/sh"
-		cmd = "-c " + cmd
+		shell = "/bin/sh"
+		shellArg = "-c"
 	}
 
-	process := os.Command(exec, cmd)
+	process := exec.Command(shell, shellArg, cmd)
 	process.Stdout = os.Stdout
 	process.Stderr = os.Stderr
 	process.Stdin = os.Stdin
