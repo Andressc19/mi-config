@@ -2,33 +2,53 @@
 # =============================================================================
 # mi-config Bootstrap Installer
 # Usage: irm https://.../bootstrap.ps1 | iex
+# Or: .\bootstrap.ps1 -All
 # =============================================================================
-
-param(
-    [switch]$All,
-    [switch]$Opencode,
-    [switch]$Nvim,
-    [switch]$Docker,
-    [switch]$Shell,
-    [switch]$Help
-)
 
 $ErrorActionPreference = "Continue"
 $REPO_URL = "https://raw.githubusercontent.com/Andressc19/mi-config/main"
 $TEMP_DIR = Join-Path $env:TEMP "mi-config-$(Get-Random)"
 
+# Parse arguments (works both from pipeline and file)
+$All = $false
+$Opencode = $false
+$Nvim = $false
+$Docker = $false
+$Shell = $false
+$Help = $false
+
+foreach ($arg in $args) {
+    switch ($arg.ToLower()) {
+        "-all" { $All = $true }
+        "-opencode" { $Opencode = $true }
+        "-nvim" { $Nvim = $true }
+        "-docker" { $Docker = $true }
+        "-shell" { $Shell = $true }
+        "-help" { $Help = $true }
+        "--all" { $All = $true }
+        "--opencode" { $Opencode = $true }
+        "--nvim" { $Nvim = $true }
+        "--docker" { $Docker = $true }
+        "--shell" { $Shell = $true }
+        "--help" { $Help = $true }
+    }
+}
+
 function Write-Color {
     param([string]$Message, [string]$Color = "White")
-    $colorMap = @{
-        "Red" = [ConsoleColor]::Red
-        "Green" = [ConsoleColor]::Green
-        "Yellow" = [ConsoleColor]::Yellow
-        "Cyan" = [ConsoleColor]::Cyan
-        "White" = [ConsoleColor]::White
-        "Gray" = [ConsoleColor]::DarkGray
+    try {
+        $foreColor = [System.ConsoleColor]::White
+        switch ($Color) {
+            "Red" { $foreColor = [System.ConsoleColor]::Red }
+            "Green" { $foreColor = [System.ConsoleColor]::Green }
+            "Yellow" { $foreColor = [System.ConsoleColor]::Yellow }
+            "Cyan" { $foreColor = [System.ConsoleColor]::Cyan }
+            "Gray" { $foreColor = [System.ConsoleColor]::DarkGray }
+        }
+        Write-Host $Message -ForegroundColor $foreColor
+    } catch {
+        Write-Host $Message
     }
-    $foreColor = if ($colorMap.ContainsKey($Color)) { $colorMap[$Color] } else { [ConsoleColor]::White }
-    Write-Host $Message -ForegroundColor $foreColor
 }
 
 function Get-PackageManager {
@@ -45,7 +65,7 @@ function Install-WithWinget {
     if ($LASTEXITCODE -eq 0) {
         Write-Color "  [OK] $Name installed" "Green"
     } else {
-        Write-Color "  [WARN] $Name may already be installed or failed" "Yellow"
+        Write-Color "  [WARN] $Name may already be installed" "Yellow"
     }
 }
 
@@ -93,7 +113,7 @@ function Install-Opencode {
     }
     
     Write-Color "  [OK] opencode + Engram config downloaded" "Green"
-    Write-Color "  To install Engram: go install github.com/engramhq/engram@latest" "Yellow"
+    Write-Color "  Run: go install github.com/engramhq/engram@latest" "Yellow"
 }
 
 function Install-LazyVim {
@@ -127,7 +147,7 @@ function Install-LazyVim {
         
         Write-Color "  [OK] LazyVim structure created" "Green"
     } else {
-        Write-Color "  [WARN] LazyVim config already exists at $nvimDir" "Yellow"
+        Write-Color "  [WARN] LazyVim config already exists" "Yellow"
     }
 }
 
@@ -139,7 +159,7 @@ function Install-Docker {
         Write-Color "  Installing Docker Desktop..." "Cyan"
         switch (Get-PackageManager) {
             "winget" { 
-                Write-Color "  [INFO] Install Docker Desktop manually from: https://docker.com/get-started" "Cyan"
+                Write-Color "  [INFO] Install manually: https://docker.com/get-started" "Cyan"
             }
             "scoop" { scoop install docker docker-compose }
             "chocolatey" { choco install docker-desktop -y }
@@ -175,10 +195,10 @@ function Install-OhMyPosh {
     
     if (-not (Test-Path $profilePath)) {
         Set-Content -Path $profilePath -Value $ohMyPoshLine
-        Write-Color "  [OK] PowerShell profile created with Oh My Posh" "Green"
+        Write-Color "  [OK] PowerShell profile created" "Green"
     } elseif (-not (Select-String -Path $profilePath -Pattern "oh-my-posh" -Quiet)) {
         Add-Content -Path $profilePath -Value $ohMyPoshLine
-        Write-Color "  [OK] Added Oh My Posh to existing profile" "Green"
+        Write-Color "  [OK] Added Oh My Posh to profile" "Green"
     } else {
         Write-Color "  [OK] Oh My Posh already in profile" "Green"
     }
@@ -186,15 +206,15 @@ function Install-OhMyPosh {
 
 function Show-Banner {
     Write-Host ""
-    Write-Host "  #" -NoNewline; Write-Host "========================================" -ForegroundColor Cyan
-    Write-Host "  #" -NoNewline; Write-Host "  mi-config Bootstrap Installer" -ForegroundColor Cyan
-    Write-Host "  #" -NoNewline; Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "  mi-config Bootstrap Installer" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
     Write-Host ""
 }
 
 function Show-Help {
     Write-Host "Usage:"
-    Write-Host "  irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/bootstrap.ps1 | iex"
+    Write-Host "  irm https://.../bootstrap.ps1 | iex -All"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -All       Install everything (default)"
@@ -226,7 +246,7 @@ if ($Help) {
 
 $hasGit = Install-Git
 if (-not $hasGit) {
-    Write-Color "`n[ERROR] Please install Git first, then run this installer again." "Red"
+    Write-Color "`n[ERROR] Please install Git first." "Red"
     exit 1
 }
 
@@ -235,24 +255,13 @@ try {
     git clone --depth 1 https://github.com/Andressc19/mi-config.git $TEMP_DIR 2>$null
     Write-Color "  [OK] Repository cloned" "Green"
 } catch {
-    Write-Color "  [WARN] Could not clone repo, using direct downloads" "Yellow"
+    Write-Color "  [WARN] Could not clone, using direct downloads" "Yellow"
 }
 
-if ($doAll -or $Opencode) {
-    Install-Opencode
-}
-
-if ($doAll -or $Nvim) {
-    Install-LazyVim
-}
-
-if ($doAll -or $Docker) {
-    Install-Docker
-}
-
-if ($doAll -or $Shell) {
-    Install-OhMyPosh
-}
+if ($doAll -or $Opencode) { Install-Opencode }
+if ($doAll -or $Nvim) { Install-LazyVim }
+if ($doAll -or $Docker) { Install-Docker }
+if ($doAll -or $Shell) { Install-OhMyPosh }
 
 if (Test-Path $TEMP_DIR) {
     Remove-Item -Recurse -Force $TEMP_DIR -ErrorAction SilentlyContinue
@@ -265,6 +274,6 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Color "Next steps:" "White"
 Write-Color "  1. Restart your terminal" "Yellow"
-Write-Color "  2. Run 'nvim' to complete LazyVim setup" "Yellow"
-Write-Color "  3. For full installer: cd mi-config\windows; .\install.ps1" "Yellow"
+Write-Color "  2. Run 'nvim' to setup LazyVim" "Yellow"
+Write-Color "  3. Full installer: cd mi-config\windows; .\install.ps1" "Yellow"
 Write-Host ""
