@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'installer/**'
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'windows/**'
   workflow_dispatch:
     inputs:
       version:
