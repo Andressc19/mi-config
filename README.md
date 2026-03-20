@@ -25,10 +25,14 @@
 ### Windows (PowerShell)
 
 ```powershell
-# Option 1: One-liner (recommended)
+# Option 1: Download and run the TUI installer (recommended)
+irm https://github.com/Andressc19/mi-config/releases/latest/download/mi-config-installer-windows.exe -OutFile mi-config-installer.exe
+.\mi-config-installer.exe
+
+# Option 2: PowerShell one-liner
 irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/bootstrap.ps1 | iex
 
-# Option 2: Full installer (after cloning)
+# Option 3: Full installer (after cloning)
 git clone https://github.com/Andressc19/mi-config.git
 cd mi-config\windows
 .\install.ps1 -All
