@@ -193,13 +193,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			case tea.KeyEnter, tea.KeySpace:
 				m.Choices.EngramChoice = EngramMigrateChoice(m.Cursor)
-				if m.Cursor == EngramMigrateImportDetected {
+				if int(m.Choices.EngramChoice) == int(EngramMigrateImportDetected) {
 					if m.SystemInfo.Engram.HasEngram {
 						m.Choices.EngramSourcePath = m.SystemInfo.Engram.EngramPath
 					} else if m.SystemInfo.Engram.HasBackup {
 						m.Choices.EngramSourcePath = m.SystemInfo.Engram.BackupPath
 					}
-				} else if m.Cursor == EngramMigrateSkip {
+				} else if int(m.Choices.EngramChoice) == int(EngramMigrateSkip) {
 					m.Choices.Component.EngramMigrate = false
 				}
 				m.SetupInstallSteps()
