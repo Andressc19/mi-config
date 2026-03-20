@@ -132,13 +132,16 @@ jobs:
           # Windows ARM64
           GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.release.outputs.version }}" -o engram_windows_arm64.exe ./cmd/engram
           
+          # Install zip for Windows archives
+          apt-get update && apt-get install -y zip
+          
           # Create archives
           tar -czf engram_linux_amd64.tar.gz engram_linux_amd64
           tar -czf engram_linux_arm64.tar.gz engram_linux_arm64
           tar -czf engram_darwin_amd64.tar.gz engram_darwin_amd64
           tar -czf engram_darwin_arm64.tar.gz engram_darwin_arm64
-          powershell -Command "Compress-Archive engram_windows_amd64.exe engram_windows_amd64.zip"
-          powershell -Command "Compress-Archive engram_windows_arm64.exe engram_windows_arm64.zip"
+          zip engram_windows_amd64.zip engram_windows_amd64.exe
+          zip engram_windows_arm64.zip engram_windows_arm64.exe
 
       - name: Upload engram binaries to Release
         uses: softprops/action-gh-release@v1
