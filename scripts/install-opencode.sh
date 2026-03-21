@@ -11,16 +11,21 @@ SKILLS_MODE=""
 SKILLS_LIST=""
 
 parse_skills_args() {
+    local has_skills=false
+    local has_exclude=false
+    
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --skills)
                 SKILLS_MODE="include"
                 SKILLS_LIST="$2"
+                has_skills=true
                 shift 2
                 ;;
             --exclude-skills)
                 SKILLS_MODE="exclude"
                 SKILLS_LIST="$2"
+                has_exclude=true
                 shift 2
                 ;;
             *)
@@ -28,6 +33,11 @@ parse_skills_args() {
                 ;;
         esac
     done
+    
+    if [[ "$has_skills" == true ]] && [[ "$has_exclude" == true ]]; then
+        log_error "Cannot use both --skills and --exclude-skills"
+        exit 1
+    fi
 }
 
 install_opencode() {
@@ -98,16 +108,6 @@ install_skills_with_filter() {
                     return 1
                 fi
             done
-            
-            if [[ "$SKILLS_MODE" == "include" ]]; then
-                log_info "Installing selected skills: $SKILLS_LIST"
-                local skill_ids_pattern=$(IFS='|'; echo "${SKILLS_ARRAY[*]}")
-                jq -r ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\")) | .path" "$manifest_path"
-            else
-                log_info "Excluding skills: $SKILLS_LIST"
-                local skill_ids_pattern=$(IFS='|'; echo "${SKILLS_ARRAY[*]}")
-                jq -r ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\") | not) | .path" "$manifest_path"
-            fi
         else
             log_error "No skills specified with --skills or --exclude-skills"
             return 1
@@ -120,21 +120,22 @@ install_skills_with_filter() {
 install_selected_skills() {
     local opencode_dir="$1"
     local manifest_path="$2"
+    
     local skills_json=""
     
     if [[ "$SKILLS_MODE" == "include" ]]; then
         IFS=',' read -ra SKILLS_ARRAY <<< "$SKILLS_LIST"
         local skill_ids_pattern=$(IFS='|'; echo "${SKILLS_ARRAY[*]}")
-        skills_json=$(jq -r ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\"))" "$manifest_path")
+        skills_json=$(jq -c ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\"))" "$manifest_path")
     elif [[ "$SKILLS_MODE" == "exclude" ]]; then
         IFS=',' read -ra SKILLS_ARRAY <<< "$SKILLS_LIST"
         local skill_ids_pattern=$(IFS='|'; echo "${SKILLS_ARRAY[*]}")
-        skills_json=$(jq -r ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\") | not)" "$manifest_path")
+        skills_json=$(jq -c ".skills[] | select(.id | inside(\"${skill_ids_pattern// /|}\") | not)" "$manifest_path")
     else
-        skills_json=$(jq -r ".skills[] | select(.required == false)" "$manifest_path")
+        skills_json=$(jq -c ".skills[] | select(.required == false)" "$manifest_path")
     fi
     
-    local required_skills=$(jq -r ".skills[] | select(.required == true)" "$manifest_path")
+    local required_skills=$(jq -c ".skills[] | select(.required == true)" "$manifest_path")
     
     while IFS= read -r skill_json; do
         [[ -z "$skill_json" ]] && continue
