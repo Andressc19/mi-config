@@ -38,7 +38,12 @@ jobs:
             LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
             VERSION="${LAST_TAG#v}"
             IFS='.' read -r major minor patch <<< "$VERSION"
-            NEW_VERSION="v$major.$minor.$((patch + 1))"
+            
+            # Keep incrementing until we find a non-existent tag
+            while git rev-parse "v$major.$minor.$patch" >/dev/null 2>&1; do
+              patch=$((patch + 1))
+            done
+            NEW_VERSION="v$major.$minor.$patch"
             VERSION="$NEW_VERSION"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -173,8 +178,13 @@ jobs:
 
       - name: Create and push tag
         run: |
-          git tag ${{ needs.version.outputs.version }}
-          git push origin ${{ needs.version.outputs.version }}
+          TAG="${{ needs.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, skipping..."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
 
       - name: Publish release
         uses: softprops/action-gh-release@v1
