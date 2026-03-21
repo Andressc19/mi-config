@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mi-config/installer/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mi-config/installer/internal/tui"
 )
 
 var Version = "1.0.0"
@@ -71,11 +71,11 @@ func main() {
 
 		choices := tui.UserChoices{
 			Component: tui.ComponentSelection{
-				Opencode:       flags.opencode,
-				LazyVim:        flags.lazvim,
-				Docker:         flags.docker,
-				Shell:          flags.shell,
-				DevTools:       flags.devtools,
+				Opencode:      flags.opencode,
+				LazyVim:       flags.lazvim,
+				Docker:        flags.docker,
+				Shell:         flags.shell,
+				DevTools:      flags.devtools,
 				EngramMigrate: flags.engramMigrate,
 			},
 		}
@@ -106,10 +106,16 @@ func main() {
 	)
 	tui.SetGlobalProgram(p)
 
-	if _, err := p.Run(); err != nil {
+	_, err := p.Run()
+
+	// Ensure terminal is restored on Windows
+	fmt.Print("\033[?1049l\033[?25h")
+
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error running installer: %v\n", err)
 		os.Exit(1)
 	}
+	os.Exit(0)
 }
 
 func printHelp() {
