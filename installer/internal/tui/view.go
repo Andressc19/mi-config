@@ -403,33 +403,33 @@ func maxInt(a, b int) int {
 // CenterBoth centers content both horizontally and vertically
 func CenterBoth(content string, width, height int) string {
 	lines := strings.Split(content, "\n")
-	
+
 	// Calculate padding for vertical centering
 	verticalPad := (height - len(lines)) / 2
 	if verticalPad < 0 {
 		verticalPad = 0
 	}
-	
+
 	// Calculate padding for horizontal centering
 	horizontalPad := (width - maxLineWidth(lines)) / 2
 	if horizontalPad < 0 {
 		horizontalPad = 0
 	}
-	
+
 	var result strings.Builder
-	
+
 	// Add vertical padding
 	for i := 0; i < verticalPad; i++ {
 		result.WriteString("\n")
 	}
-	
+
 	// Add horizontal padding and lines
 	style := lipgloss.NewStyle().MarginLeft(horizontalPad)
 	for _, line := range lines {
 		result.WriteString(style.Render(line))
 		result.WriteString("\n")
 	}
-	
+
 	return result.String()
 }
 
@@ -479,11 +479,13 @@ func (m Model) renderSkillSelection() string {
 					break
 				}
 			}
+			cursor := "  "
 			style := UnselectedStyle
 			if globalIdx == m.Cursor {
+				cursor = "▸ "
 				style = SelectedStyle
 			}
-			s.WriteString(style.Render(fmt.Sprintf("  %s %s", checkbox, skill.Name)))
+			s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, skill.Name)))
 			s.WriteString("\n")
 		}
 		s.WriteString("\n")
@@ -505,11 +507,13 @@ func (m Model) renderSkillSelection() string {
 					break
 				}
 			}
+			cursor := "  "
 			style := UnselectedStyle
 			if globalIdx == m.Cursor {
+				cursor = "▸ "
 				style = SelectedStyle
 			}
-			s.WriteString(style.Render(fmt.Sprintf("  %s %s", checkbox, skill.Name)))
+			s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, skill.Name)))
 			s.WriteString("\n")
 		}
 		s.WriteString("\n")
