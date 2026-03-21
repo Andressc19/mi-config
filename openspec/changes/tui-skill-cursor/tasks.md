@@ -4,6 +4,7 @@
 
 - [x] 1.1 Modificar `renderSkillSelection()` en `installer/internal/tui/view.go` para agregar "▸ " prefix al item con cursor activo (igual que en `renderSelection()`)
 - [x] 1.2 Compilar el proyecto para verificar sintaxis: `cd installer && go build ./...`
+- [x] 1.3 Agregar cursor prefix en `renderOptions()` (step 2 - component selection)
 
 ## Phase 2: Verification
 

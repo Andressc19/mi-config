@@ -142,15 +142,17 @@ func (m Model) renderOptions() string {
 
 	for i, opt := range options {
 		checkbox := "[ ]"
+		cursor := "  "
 		style := UnselectedStyle
 		if opt.Selected {
 			checkbox = "[✓]"
 			style = SelectedStyle
 		}
 		if i == m.Cursor {
+			cursor = "▸ "
 			style = SelectedStyle
 		}
-		s.WriteString(style.Render(fmt.Sprintf("  %s %s", checkbox, opt.Name)))
+		s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, opt.Name)))
 		s.WriteString("\n")
 	}
 
