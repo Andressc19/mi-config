@@ -120,18 +120,22 @@ jobs:
           GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_windows_amd64.exe ./cmd/engram
           GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_windows_arm64.exe ./cmd/engram
           
-          tar -czf engram_linux_amd64.tar.gz engram_linux_amd64
-          tar -czf engram_linux_arm64.tar.gz engram_linux_arm64
-          tar -czf engram_darwin_amd64.tar.gz engram_darwin_amd64
-          tar -czf engram_darwin_arm64.tar.gz engram_darwin_arm64
-          zip engram_windows_amd64.zip engram_windows_amd64.exe
-          zip engram_windows_arm64.zip engram_windows_arm64.exe
+          mkdir -p dist
+          mv engram_* dist/
+          mv engram_windows_*.exe dist/
+          
+          tar -czf dist/engram_linux_amd64.tar.gz -C dist engram_linux_amd64
+          tar -czf dist/engram_linux_arm64.tar.gz -C dist engram_linux_arm64
+          tar -czf dist/engram_darwin_amd64.tar.gz -C dist engram_darwin_amd64
+          tar -czf dist/engram_darwin_arm64.tar.gz -C dist engram_darwin_arm64
+          zip dist/engram_windows_amd64.zip dist/engram_windows_amd64.exe
+          zip dist/engram_windows_arm64.zip dist/engram_windows_arm64.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: engram-binaries
-          path: engram
+          path: engram/dist
 
   release:
     needs: [version, build-installers, build-engram]
