@@ -3,8 +3,8 @@ package tui
 import (
 	"time"
 
-	"github.com/mi-config/installer/internal/system"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mi-config/installer/internal/system"
 )
 
 type tickMsg struct{}
@@ -296,6 +296,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+	}
+
+	if m.Quitting {
+		return m, tea.Quit
 	}
 
 	return m, nil
