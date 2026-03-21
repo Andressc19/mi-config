@@ -6,9 +6,10 @@ on:
       - main
     paths:
       - 'installer/**'
-      - '.github/workflows/**'
       - 'scripts/**'
       - 'windows/**'
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
