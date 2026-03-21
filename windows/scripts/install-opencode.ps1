@@ -1,3 +1,8 @@
+param(
+    [string[]]$Skills = $null,
+    [string[]]$ExcludeSkills = $null
+)
+
 . "$PSScriptRoot\lib-detect.ps1"
 
 $script:SCRIPT_DIR = Split-Path -Parent $PSScriptRoot
@@ -6,23 +11,19 @@ $script:REPO_ROOT = (Get-Item $script:SCRIPT_DIR).Parent.FullName
 $script:SKILLS_MODE = $null
 $script:SKILLS_LIST = $null
 
-function Parse-SkillsArgs {
-    param([string[]]$Args)
-    
-    for ($i = 0; $i -lt $Args.Length; $i++) {
-        switch ($Args[$i]) {
-            "-Skills" {
-                $script:SKILLS_MODE = "include"
-                $script:SKILLS_LIST = $Args[$i + 1] -split ","
-                $i++
-            }
-            "-ExcludeSkills" {
-                $script:SKILLS_MODE = "exclude"
-                $script:SKILLS_LIST = $Args[$i + 1] -split ","
-                $i++
-            }
-        }
-    }
+if ($Skills -and $ExcludeSkills) {
+    Write-Err "Cannot use both -Skills and -ExcludeSkills"
+    exit 1
+}
+
+if ($Skills) {
+    $script:SKILLS_MODE = "include"
+    $script:SKILLS_LIST = $Skills
+}
+
+if ($ExcludeSkills) {
+    $script:SKILLS_MODE = "exclude"
+    $script:SKILLS_LIST = $ExcludeSkills
 }
 
 function Install-Opencode {
@@ -129,6 +130,5 @@ function Install-SkillsWithFilter {
 }
 
 if ($MyInvocation.InvocationName -ne ".") {
-    Parse-SkillsArgs -Args $args
     Install-Opencode -SkillsMode $SKILLS_MODE -SkillsList $SKILLS_LIST
 }
