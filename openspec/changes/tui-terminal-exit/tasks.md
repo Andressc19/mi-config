@@ -9,8 +9,9 @@
 
 - [x] 2.1 Agregar `defer` para resetear terminal si es necesario
 - [x] 2.2 Verificar que `p.Run()` devuelve sin error y el programa hace `os.Exit(0)`
+- [x] 2.3 Retornar `tea.Quit` cuando `m.Quitting` es true
 
 ## Phase 3: Verification
 
-- [ ] 3.1 Compilar: `cd installer && go build ./...`
-- [ ] 3.2 Ejecutar exe en Windows y verificar que devuelve el prompt al salir
+- [x] 3.1 Compilar: `cd installer && go build ./...`
+- [x] 3.2 Ejecutar exe en Windows y verificar que devuelve el prompt al salir

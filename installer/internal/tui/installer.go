@@ -51,30 +51,32 @@ func stepInstallOpencode(m *Model) error {
 	SendLog(stepID, "Detecting platform...")
 
 	var installCmd string
-
-	switch runtime.GOOS {
-	case "windows":
-		if sysInfo.HasWinget {
+	pkgMgr := sysInfo.GetPackageManager()
+	if pkgMgr.HasPkgMgr {
+		switch pkgMgr.Name {
+		case "winget":
 			SendLog(stepID, "Installing opencode via winget...")
 			installCmd = "winget install --id Ananace.Opencode -e --silent"
-		} else {
-			SendLog(stepID, "winget not found. Please install opencode manually from https://opencode.ai")
-			return nil
-		}
-	case "darwin":
-		if sysInfo.HasBrew {
+		case "brew":
 			SendLog(stepID, "Installing opencode via Homebrew...")
 			installCmd = "brew install --cask opencode"
+		case "apt", "dnf", "pacman":
+			// For Linux, we still use the official script
+			SendLog(stepID, "Installing opencode via script...")
+			installCmd = "curl -fsSL https://opencode.ai/install | bash"
+		default:
+			SendLog(stepID, fmt.Sprintf("Unsupported package manager %s, falling back to script...", pkgMgr.Name))
+			installCmd = "curl -fsSL https://opencode.ai/install | bash"
+		}
+	} else {
+		// No package manager, fallback to script for Linux, else manual
+		if runtime.GOOS == "linux" {
+			SendLog(stepID, "Installing opencode via script...")
+			installCmd = "curl -fsSL https://opencode.ai/install | bash"
 		} else {
-			SendLog(stepID, "Homebrew not found. Please install opencode manually from https://opencode.ai")
+			SendLog(stepID, "Package manager not found. Please install opencode manually from https://opencode.ai")
 			return nil
 		}
-	case "linux":
-		SendLog(stepID, "Installing opencode via script...")
-		installCmd = "curl -fsSL https://opencode.ai/install | bash"
-	default:
-		SendLog(stepID, "Unsupported platform for automatic installation")
-		return nil
 	}
 
 	SendLog(stepID, "Installing Engram...")
@@ -94,7 +96,7 @@ func stepInstallOpencode(m *Model) error {
 	if len(m.Choices.SelectedSkills) > 0 {
 		skillsList := strings.Join(m.Choices.SelectedSkills, ",")
 		SendLog(stepID, fmt.Sprintf("Installing selected skills: %s", skillsList))
-		
+
 		repoRoot := getRepoRoot()
 		var skillsCmd string
 		switch runtime.GOOS {
@@ -103,7 +105,7 @@ func stepInstallOpencode(m *Model) error {
 		default:
 			skillsCmd = fmt.Sprintf(`bash "%s/scripts/install-opencode.sh" --skills %s`, repoRoot, skillsList)
 		}
-		
+
 		if err := runCommand(skillsCmd); err != nil {
 			SendLog(stepID, fmt.Sprintf("Warning: Skills installation had issues: %v", err))
 		}
@@ -138,21 +140,29 @@ func stepInstallLazyVim(m *Model) error {
 	// Check for Neovim
 	if !commandExists("nvim") {
 		SendLog(stepID, "Installing Neovim...")
-		switch runtime.GOOS {
-		case "windows":
-			if m.SystemInfo.HasWinget {
+		pkgMgr := m.SystemInfo.GetPackageManager()
+		if pkgMgr.HasPkgMgr {
+			switch pkgMgr.Name {
+			case "winget":
 				runCommand("winget install --id Neovim.Neovim -e --silent")
-			}
-		case "darwin":
-			if m.SystemInfo.HasBrew {
+			case "brew":
 				runCommand("brew install neovim")
-			}
-		case "linux":
-			if m.SystemInfo.HasApt {
+			case "apt":
 				runCommand("sudo apt install -y neovim")
-			} else if m.SystemInfo.HasDnf {
+			case "dnf":
 				runCommand("sudo dnf install -y neovim")
-			} else {
+			case "pacman":
+				runCommand("sudo pacman -S neovim")
+			default:
+				// Unknown package manager, fallback to manual
+				if runtime.GOOS == "linux" {
+					runCommand("curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz")
+					runCommand("sudo tar -C /usr/local --strip-components=1 -xzf nvim-linux64.tar.gz")
+				}
+			}
+		} else {
+			// No package manager
+			if runtime.GOOS == "linux" {
 				runCommand("curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz")
 				runCommand("sudo tar -C /usr/local --strip-components=1 -xzf nvim-linux64.tar.gz")
 			}
@@ -182,32 +192,42 @@ func stepInstallDocker(m *Model) error {
 
 	SendLog(stepID, "Installing Docker...")
 
-	switch runtime.GOOS {
-	case "windows":
-		SendLog(stepID, "Please install Docker Desktop from https://docker.com/products/docker-desktop")
-		return nil
-	case "darwin":
-		if m.SystemInfo.HasBrew {
-			SendLog(stepID, "Installing Docker Desktop via Homebrew...")
-			runCommand("brew install --cask docker")
-		} else {
+	pkgMgr := m.SystemInfo.GetPackageManager()
+	if pkgMgr.HasPkgMgr {
+		switch pkgMgr.Name {
+		case "winget":
 			SendLog(stepID, "Please install Docker Desktop from https://docker.com/products/docker-desktop")
 			return nil
-		}
-	case "linux":
-		if m.SystemInfo.HasApt {
+		case "brew":
+			SendLog(stepID, "Installing Docker Desktop via Homebrew...")
+			runCommand("brew install --cask docker")
+		case "apt":
 			SendLog(stepID, "Installing Docker via apt...")
 			runCommand("sudo apt-get update")
 			runCommand("sudo apt-get install -y docker.io docker-compose")
 			runCommand("sudo systemctl start docker")
 			runCommand("sudo systemctl enable docker")
-		} else if m.SystemInfo.HasDnf {
+		case "dnf":
 			SendLog(stepID, "Installing Docker via dnf...")
 			runCommand("sudo dnf install -y docker docker-compose")
 			runCommand("sudo systemctl start docker")
 			runCommand("sudo systemctl enable docker")
-		} else {
+		case "pacman":
+			SendLog(stepID, "Installing Docker via pacman...")
+			runCommand("sudo pacman -S docker docker-compose")
+			runCommand("sudo systemctl start docker")
+			runCommand("sudo systemctl enable docker")
+		default:
 			SendLog(stepID, "Please install Docker manually from https://docs.docker.com/engine/install/")
+			return nil
+		}
+	} else {
+		// No package manager
+		if runtime.GOOS == "linux" {
+			SendLog(stepID, "Please install Docker manually from https://docs.docker.com/engine/install/")
+			return nil
+		} else {
+			SendLog(stepID, "Please install Docker Desktop from https://docker.com/products/docker-desktop")
 			return nil
 		}
 	}

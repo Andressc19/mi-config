@@ -20,35 +20,93 @@ const (
 )
 
 type EngramInfo struct {
-	HasEngram        bool
-	EngramPath       string
-	HasBackup        bool
-	BackupPath       string
-	WSLEngramPath    string
+	HasEngram         bool
+	EngramPath        string
+	HasBackup         bool
+	BackupPath        string
+	WSLEngramPath     string
 	WindowsEngramPath string
-	DBFile           string
+	DBFile            string
 }
 
 type SystemInfo struct {
-	OS              OSType
-	OSName          string
-	IsWSL           bool
-	IsARM           bool
-	HasGit          bool
-	HasDocker       bool
-	HasWinget       bool
-	HasBrew         bool
-	HasApt          bool
-	HasDnf          bool
-	HasNpm          bool
-	HasNode         bool
-	HasOpencode     bool
-	HasLazyVim      bool
-	UserShell       string
-	HasPowerShell   bool
-	HasOhMyPosh     bool
-	Engram          EngramInfo
+	OS            OSType
+	OSName        string
+	IsWSL         bool
+	IsARM         bool
+	HasGit        bool
+	HasDocker     bool
+	HasWinget     bool
+	HasBrew       bool
+	HasApt        bool
+	HasDnf        bool
+	HasPacman     bool
+	HasNpm        bool
+	HasNode       bool
+	HasOpencode   bool
+	HasLazyVim    bool
+	UserShell     string
+	HasPowerShell bool
+	HasOhMyPosh   bool
+	Engram        EngramInfo
 }
+type PackageMgrInfo struct {
+	Name       string
+	InstallCmd string
+	HasPkgMgr  bool
+}
+
+func (info *SystemInfo) GetPackageManager() *PackageMgrInfo {
+	// Determine based on OS and availability
+	switch info.OS {
+	case OSWindows:
+		if info.HasWinget {
+			return &PackageMgrInfo{
+				Name:       "winget",
+				InstallCmd: "winget install",
+				HasPkgMgr:  true,
+			}
+		}
+	case OSMac:
+		if info.HasBrew {
+			return &PackageMgrInfo{
+				Name:       "brew",
+				InstallCmd: "brew install",
+				HasPkgMgr:  true,
+			}
+		}
+	case OSLinux, OSWSL:
+		// Prioritize apt, dnf, pacman
+		if info.HasApt {
+			return &PackageMgrInfo{
+				Name:       "apt",
+				InstallCmd: "apt install",
+				HasPkgMgr:  true,
+			}
+		}
+		if info.HasDnf {
+			return &PackageMgrInfo{
+				Name:       "dnf",
+				InstallCmd: "dnf install",
+				HasPkgMgr:  true,
+			}
+		}
+		if info.HasPacman {
+			return &PackageMgrInfo{
+				Name:       "pacman",
+				InstallCmd: "pacman -S",
+				HasPkgMgr:  true,
+			}
+		}
+	}
+	// No package manager found
+	return &PackageMgrInfo{
+		Name:       "",
+		InstallCmd: "",
+		HasPkgMgr:  false,
+	}
+}
+
 
 func Detect() *SystemInfo {
 	info := &SystemInfo{
@@ -81,6 +139,7 @@ func Detect() *SystemInfo {
 	info.HasBrew = CommandExists("brew")
 	info.HasApt = CommandExists("apt")
 	info.HasDnf = CommandExists("dnf")
+	info.HasPacman = CommandExists("pacman")
 	info.HasNpm = CommandExists("npm")
 	info.HasNode = CommandExists("node")
 	info.HasOpencode = CommandExists("opencode")
