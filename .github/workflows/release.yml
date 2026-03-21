@@ -19,7 +19,6 @@ permissions:
   contents: write
 
 jobs:
-  # Step 1: Determine version (no tag created yet)
   version:
     runs-on: ubuntu-latest
     outputs:
@@ -34,23 +33,18 @@ jobs:
           if [[ -n "${{ inputs.version }}" ]]; then
             VERSION="${{ inputs.version }}"
           else
-            # Auto bump patch version from last tag
             LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
             VERSION="${LAST_TAG#v}"
             IFS='.' read -r major minor patch <<< "$VERSION"
-            
-            # Keep incrementing until we find a non-existent tag
             while git rev-parse "v$major.$minor.$patch" >/dev/null 2>&1; do
               patch=$((patch + 1))
             done
-            NEW_VERSION="v$major.$minor.$patch"
-            VERSION="$NEW_VERSION"
+            VERSION="v$major.$minor.$patch"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Determined version: $VERSION"
 
-  # Step 2: Build mi-config installers (parallel, no release created yet)
-  build:
+  build-installers:
     needs: version
     strategy:
       matrix:
@@ -92,17 +86,12 @@ jobs:
           go mod tidy
           go build -ldflags="-s -w" -o ${{ matrix.artifact }} ./cmd/mi-config-installer
 
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: installer/${{ matrix.artifact }}
-          tag_name: ${{ needs.version.outputs.version }}
-          generate_release_notes: true
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: mi-config-${{ matrix.artifact }}
+          path: installer/${{ matrix.artifact }}
 
-  # Step 3: Build engram from fork (parallel)
   build-engram:
     needs: version
     runs-on: ubuntu-latest
@@ -119,33 +108,18 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Build engram for all platforms
+      - name: Build engram
         run: |
           cd engram
           go mod tidy
           
-          # Linux AMD64
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_linux_amd64 ./cmd/engram
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_linux_amd64 ./cmd/engram
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_linux_arm64 ./cmd/engram
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_darwin_amd64 ./cmd/engram
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_darwin_arm64 ./cmd/engram
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_windows_amd64.exe ./cmd/engram
+          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o engram_windows_arm64.exe ./cmd/engram
           
-          # Linux ARM64
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_linux_arm64 ./cmd/engram
-          
-          # macOS AMD64
-          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_darwin_amd64 ./cmd/engram
-          
-          # macOS ARM64
-          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_darwin_arm64 ./cmd/engram
-          
-          # Windows AMD64
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_windows_amd64.exe ./cmd/engram
-          
-          # Windows ARM64
-          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -X main.version=${{ needs.version.outputs.version }}" -o engram_windows_arm64.exe ./cmd/engram
-          
-          # Install zip for Windows archives
-          apt-get update && apt-get install -y zip
-          
-          # Create archives
           tar -czf engram_linux_amd64.tar.gz engram_linux_amd64
           tar -czf engram_linux_arm64.tar.gz engram_linux_arm64
           tar -czf engram_darwin_amd64.tar.gz engram_darwin_amd64
@@ -153,44 +127,50 @@ jobs:
           zip engram_windows_amd64.zip engram_windows_amd64.exe
           zip engram_windows_arm64.zip engram_windows_arm64.exe
 
-      - name: Upload engram binaries to Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            engram/engram_linux_amd64.tar.gz
-            engram/engram_linux_arm64.tar.gz
-            engram/engram_darwin_amd64.tar.gz
-            engram/engram_darwin_arm64.tar.gz
-            engram/engram_windows_amd64.zip
-            engram/engram_windows_arm64.zip
-          tag_name: ${{ needs.version.outputs.version }}
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: engram-binaries
+          path: engram
 
-  # Step 4: Create tag and publish release (ONLY if ALL builds succeed)
-  create-release:
-    needs: [version, build, build-engram]
+  release:
+    needs: [version, build-installers, build-engram]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create and push tag
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: mi-config-*
+          merge-multiple: true
+
+      - name: Download engram
+        uses: actions/download-artifact@v4
+        with:
+          name: engram-binaries
+          path: engram
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            installers/*
+            engram/*
+          tag_name: ${{ needs.version.outputs.version }}
+          draft: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Release
         run: |
           TAG="${{ needs.version.outputs.version }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping..."
+          if git ls-remote --tags origin "$TAG" | grep -q "$TAG"; then
+            echo "Tag $TAG already exists on remote, skipping..."
           else
             git tag "$TAG"
             git push origin "$TAG"
           fi
-
-      - name: Publish release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.version.outputs.version }}
-          draft: false
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
