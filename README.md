@@ -32,7 +32,13 @@ irm https://github.com/Andressc19/mi-config/releases/latest/download/mi-config-i
 # Option 2: PowerShell one-liner
 irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/bootstrap.ps1 | iex
 
-# Option 3: Full installer (after cloning)
+# Option 3: Cross-platform TUI installer (recommended - works on all platforms)
+## Windows
+go run ./installer
+## Linux/macOS
+go run ./installer
+
+# Option 4: Full installer (after cloning)
 git clone https://github.com/Andressc19/mi-config.git
 cd mi-config\windows
 .\install.ps1 -All
@@ -101,6 +107,38 @@ chmod +x install.sh
 .\install.ps1 -All -DryRun
 ```
 
+---
+
+## 🖥️ Interactive TUI Installer
+
+The Go-based TUI installer provides an interactive interface for selecting components:
+
+```bash
+# Run the TUI installer
+go run ./installer
+```
+
+### Features
+- **Cross-platform**: Works on Windows, macOS, and Linux
+- **Rose Pine dark theme**: Modern terminal aesthetics
+- **Vim-style navigation**: Use `j/k` or arrow keys, `Enter` to select, `Esc` to go back
+- **Step-by-step workflow**: Welcome → Select agent → Choose components → Review → Install
+
+### TUI Screens
+| Screen | Description |
+|--------|-------------|
+| Welcome | ASCII logo and intro |
+| Agent Selection | Choose AI assistant (opencode, Claude Code, etc.) |
+| Component Selection | Pick tools to install (opencode, Neovim, Docker, etc.) |
+| Review | Review installation plan |
+| Installing | Progress display with spinner |
+| Complete | Success summary |
+
+### Requirements
+- Go 1.21+
+
+---
+
 ### Available Flags
 
 | Flag | Description |
@@ -168,6 +206,14 @@ Backups are saved to:
 ```
 mi-config/
 ├── install.sh                    # Main installer (Bash)
+├── installer/                    # Go TUI installer (cross-platform)
+│   └── internal/tui/
+│       ├── main.go              # TUI entry point
+│       ├── model.go             # State management
+│       ├── router.go            # Screen navigation router
+│       ├── styles.go            # Rose Pine theme styles
+│       ├── screen_*.go          # Individual screen renderers
+│       └── interactive.go      # Keyboard input handling
 ├── scripts/
 │   ├── lib-detect.sh             # Detection utilities
 │   ├── install-opencode.sh       # opencode + Engram
