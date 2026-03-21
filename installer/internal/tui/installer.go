@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/mi-config/installer/internal/system"
 )
 
 type StepError struct {
@@ -63,16 +65,31 @@ func stepInstallOpencode(m *Model) error {
 		case "apt", "dnf", "pacman":
 			// For Linux, we still use the official script
 			SendLog(stepID, "Installing opencode via script...")
-			installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			if !system.CommandExists("bash") {
+				SendLog(stepID, "bash not found. Please install bash to install opencode.")
+				installCmd = ""
+			} else {
+				installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			}
 		default:
 			SendLog(stepID, fmt.Sprintf("Unsupported package manager %s, falling back to script...", pkgMgr.Name))
-			installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			if !system.CommandExists("bash") {
+				SendLog(stepID, "bash not found. Please install bash to install opencode.")
+				installCmd = ""
+			} else {
+				installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			}
 		}
 	} else {
 		// No package manager, fallback to script for Linux, else manual
 		if runtime.GOOS == "linux" {
 			SendLog(stepID, "Installing opencode via script...")
-			installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			if !system.CommandExists("bash") {
+				SendLog(stepID, "bash not found. Please install bash to install opencode.")
+				installCmd = ""
+			} else {
+				installCmd = "curl -fsSL https://opencode.ai/install | bash"
+			}
 		} else {
 			SendLog(stepID, "Package manager not found. Please install opencode manually from https://opencode.ai")
 			return nil
@@ -103,11 +120,17 @@ func stepInstallOpencode(m *Model) error {
 		case "windows":
 			skillsCmd = fmt.Sprintf(`pwsh -File "%s/windows/scripts/install-opencode.ps1" -Skills %s`, repoRoot, skillsList)
 		default:
-			skillsCmd = fmt.Sprintf(`bash "%s/scripts/install-opencode.sh" --skills %s`, repoRoot, skillsList)
+			if !system.CommandExists("bash") {
+				SendLog(stepID, "bash not found. Please install bash to install skills.")
+			} else {
+				skillsCmd = fmt.Sprintf(`bash "%s/scripts/install-opencode.sh" --skills %s`, repoRoot, skillsList)
+			}
 		}
 
-		if err := runCommand(skillsCmd); err != nil {
-			SendLog(stepID, fmt.Sprintf("Warning: Skills installation had issues: %v", err))
+		if skillsCmd != "" {
+			if err := runCommand(skillsCmd); err != nil {
+				SendLog(stepID, fmt.Sprintf("Warning: Skills installation had issues: %v", err))
+			}
 		}
 	}
 
@@ -264,10 +287,17 @@ func stepInstallShell(m *Model) error {
 	if runtime.GOOS == "darwin" && m.SystemInfo.HasBrew {
 		ohMyPoshCmd = "brew install oh-my-posh"
 	} else if runtime.GOOS == "linux" {
-		ohMyPoshCmd = "curl -s https://ohmyposh.dev/install.sh | bash"
+		if !system.CommandExists("bash") {
+			SendLog(stepID, "bash not found. Please install bash to install oh-my-posh.")
+			ohMyPoshCmd = ""
+		} else {
+			ohMyPoshCmd = "curl -s https://ohmyposh.dev/install.sh | bash"
+		}
 	}
 
-	runCommand(ohMyPoshCmd)
+	if ohMyPoshCmd != "" {
+		runCommand(ohMyPoshCmd)
+	}
 
 	// Create default PowerShell profile
 	homeDir := os.Getenv("HOME")

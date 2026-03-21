@@ -15,7 +15,7 @@
 ## Phase 3: Script Execution
 
 - [x] 3.1 Verificar que `scripts/*.sh` se llaman correctamente en Linux/macOS para skills
-- [ ] 3.2 Agregar fallback si bash no está disponible (recomendado)
+- [x] 3.2 Agregar fallback si bash no está disponible (recomendado)
 
 ## Phase 4: Verification
 
