@@ -188,7 +188,7 @@ func (m Model) renderEngramMigrate() string {
 
 	options := []string{
 		"📥 Import from detected location",
-		"⏭  Skip (fresh install)",
+		"⏩︎Skip (fresh install)",
 		"📁 Import from custom path",
 	}
 
@@ -227,7 +227,7 @@ func (m Model) renderStepProgress() string {
 		var style lipgloss.Style
 		if i < currentIdx {
 			style = StepDoneStyle
-			parts = append(parts, style.Render("✓ "+step))
+			parts = append(parts, style.Render(" "+step))
 		} else if i == currentIdx {
 			style = StepActiveStyle
 			parts = append(parts, style.Render("● "+step))
