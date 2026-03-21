@@ -33,10 +33,7 @@ irm https://github.com/Andressc19/mi-config/releases/latest/download/mi-config-i
 irm https://raw.githubusercontent.com/Andressc19/mi-config/main/windows/bootstrap.ps1 | iex
 
 # Option 3: Cross-platform TUI installer (recommended - works on all platforms)
-## Windows
-go run ./installer
-## Linux/macOS
-go run ./installer
+go run ./installer/cmd/mi-config-installer
 
 # Option 4: Full installer (after cloning)
 git clone https://github.com/Andressc19/mi-config.git
@@ -207,8 +204,9 @@ Backups are saved to:
 mi-config/
 ├── install.sh                    # Main installer (Bash)
 ├── installer/                    # Go TUI installer (cross-platform)
+│   ├── cmd/mi-config-installer/ # TUI entry point
 │   └── internal/tui/
-│       ├── main.go              # TUI entry point
+│       ├── model.go             # State management
 │       ├── model.go             # State management
 │       ├── router.go            # Screen navigation router
 │       ├── styles.go            # Rose Pine theme styles
