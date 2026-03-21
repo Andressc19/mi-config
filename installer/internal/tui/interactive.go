@@ -161,8 +161,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.Choices.Component.DevTools
 
 				if hasSelection {
+					if m.Choices.Component.Opencode && len(m.Skills) == 0 {
+						m.LoadSkillsFromManifest()
+					}
 					if m.Choices.Component.EngramMigrate {
 						m.Screen = ScreenEngramMigrate
+						m.Cursor = 0
+					} else if m.Choices.Component.Opencode && len(m.Skills) > 0 {
+						m.Screen = ScreenSkillSelect
 						m.Cursor = 0
 					} else {
 						m.SetupInstallSteps()
@@ -178,6 +184,56 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			case tea.KeyEscape:
 				m.Screen = ScreenOSSelect
+				m.Cursor = 0
+			}
+
+		case ScreenSkillSelect:
+			switch msg.Type {
+			case tea.KeyUp:
+				if m.Cursor > 0 {
+					m.Cursor--
+				}
+			case tea.KeyDown:
+				if m.Cursor < len(m.Skills)-1 {
+					m.Cursor++
+				}
+			case tea.KeySpace, tea.KeyRunes:
+				if msg.Type == tea.KeySpace || msg.String() == " " {
+					if m.Cursor < len(m.Skills) {
+						m.Skills[m.Cursor].Selected = !m.Skills[m.Cursor].Selected
+					}
+				}
+				if msg.String() == "a" || msg.String() == "A" {
+					for i := range m.Skills {
+						m.Skills[i].Selected = true
+					}
+				}
+				if msg.String() == "n" || msg.String() == "N" {
+					for i := range m.Skills {
+						if !m.Skills[i].Required {
+							m.Skills[i].Selected = false
+						}
+					}
+				}
+			case tea.KeyEnter:
+				selectedSkills := []string{}
+				for _, skill := range m.Skills {
+					if skill.Selected {
+						selectedSkills = append(selectedSkills, skill.ID)
+					}
+				}
+				m.Choices.SelectedSkills = selectedSkills
+				m.SetupInstallSteps()
+				m.Screen = ScreenInstalling
+				m.CurrentStep = 0
+				if len(m.Steps) > 0 {
+					m.Steps[0].Status = StatusRunning
+					return m, m.startInstallation()
+				} else {
+					m.Screen = ScreenComplete
+				}
+			case tea.KeyEscape:
+				m.Screen = ScreenOptions
 				m.Cursor = 0
 			}
 

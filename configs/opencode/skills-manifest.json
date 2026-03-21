@@ -1,0 +1,130 @@
+{
+  "skills": [
+    {
+      "id": "sdd-init",
+      "name": "SDD Init",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Initialize Spec-Driven Development context in a project",
+      "source": "local",
+      "path": "skills/sdd-init/SKILL.md"
+    },
+    {
+      "id": "sdd-explore",
+      "name": "SDD Explore",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Explore and investigate ideas before committing to a change",
+      "source": "local",
+      "path": "skills/sdd-explore/SKILL.md"
+    },
+    {
+      "id": "sdd-propose",
+      "name": "SDD Propose",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Create a change proposal with intent, scope, and approach",
+      "source": "local",
+      "path": "skills/sdd-propose/SKILL.md"
+    },
+    {
+      "id": "sdd-spec",
+      "name": "SDD Spec",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Write specifications with requirements and scenarios",
+      "source": "local",
+      "path": "skills/sdd-spec/SKILL.md"
+    },
+    {
+      "id": "sdd-design",
+      "name": "SDD Design",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Create technical design document with architecture decisions",
+      "source": "local",
+      "path": "skills/sdd-design/SKILL.md"
+    },
+    {
+      "id": "sdd-tasks",
+      "name": "SDD Tasks",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Break down specs and designs into implementation tasks",
+      "source": "local",
+      "path": "skills/sdd-tasks/SKILL.md"
+    },
+    {
+      "id": "sdd-apply",
+      "name": "SDD Apply",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Implement tasks from the change, writing actual code",
+      "source": "local",
+      "path": "skills/sdd-apply/SKILL.md"
+    },
+    {
+      "id": "sdd-verify",
+      "name": "SDD Verify",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Validate that implementation matches specs, design, and tasks",
+      "source": "local",
+      "path": "skills/sdd-verify/SKILL.md"
+    },
+    {
+      "id": "sdd-archive",
+      "name": "SDD Archive",
+      "group": "sdd-workflow",
+      "required": false,
+      "description": "Sync delta specs to main specs and archive a completed change",
+      "source": "local",
+      "path": "skills/sdd-archive/SKILL.md"
+    },
+    {
+      "id": "mermaid-diagrams",
+      "name": "Mermaid Diagrams",
+      "group": "utilities",
+      "required": false,
+      "description": "Render Mermaid diagrams as SVG or ASCII art",
+      "source": "local",
+      "path": "skills/mermaid-diagrams/SKILL.md"
+    },
+    {
+      "id": "readme-docs",
+      "name": "Readme Docs",
+      "group": "utilities",
+      "required": false,
+      "description": "Generate README documentation from code",
+      "source": "local",
+      "path": "skills/readme-docs/SKILL.md"
+    },
+    {
+      "id": "skill-registry",
+      "name": "Skill Registry",
+      "group": "utilities",
+      "required": true,
+      "description": "Create or update the skill registry for the current project",
+      "source": "local",
+      "path": "skills/skill-registry/SKILL.md"
+    },
+    {
+      "id": "issue-creation",
+      "name": "Issue Creation",
+      "group": "utilities",
+      "required": false,
+      "description": "Issue creation workflow for Agent Teams Lite",
+      "source": "local",
+      "path": "skills/issue-creation/SKILL.md"
+    },
+    {
+      "id": "branch-pr",
+      "name": "Branch PR",
+      "group": "utilities",
+      "required": false,
+      "description": "PR creation workflow for Agent Teams Lite",
+      "source": "local",
+      "path": "skills/branch-pr/SKILL.md"
+    }
+  ]
+}

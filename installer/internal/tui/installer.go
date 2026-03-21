@@ -90,8 +90,43 @@ func stepInstallOpencode(m *Model) error {
 		}
 	}
 
+	// Install skills
+	if len(m.Choices.SelectedSkills) > 0 {
+		skillsList := strings.Join(m.Choices.SelectedSkills, ",")
+		SendLog(stepID, fmt.Sprintf("Installing selected skills: %s", skillsList))
+		
+		repoRoot := getRepoRoot()
+		var skillsCmd string
+		switch runtime.GOOS {
+		case "windows":
+			skillsCmd = fmt.Sprintf(`pwsh -File "%s/windows/scripts/install-opencode.ps1" -Skills %s`, repoRoot, skillsList)
+		default:
+			skillsCmd = fmt.Sprintf(`bash "%s/scripts/install-opencode.sh" --skills %s`, repoRoot, skillsList)
+		}
+		
+		if err := runCommand(skillsCmd); err != nil {
+			SendLog(stepID, fmt.Sprintf("Warning: Skills installation had issues: %v", err))
+		}
+	}
+
 	SendLog(stepID, "✓ opencode installation complete")
 	return nil
+}
+
+func getRepoRoot() string {
+	// Try to find the repo root
+	dir, _ := os.Getwd()
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "configs", "opencode", "skills-manifest.json")); err == nil {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return ""
 }
 
 func stepInstallLazyVim(m *Model) error {

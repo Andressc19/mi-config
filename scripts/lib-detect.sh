@@ -109,3 +109,67 @@ get_engram_repo_url() {
         *) echo "https://github.com/Gentleman-Programming/engram.git" ;;
     esac
 }
+
+parse_skills_manifest() {
+    local manifest_path="$1"
+    
+    if [[ ! -f "$manifest_path" ]]; then
+        log_error "skills-manifest.json not found at $manifest_path"
+        return 1
+    fi
+    
+    if ! command -v jq &> /dev/null; then
+        log_error "jq is required for skills manifest parsing. Install with: brew install jq"
+        return 1
+    fi
+    
+    echo "$manifest_path"
+}
+
+get_skill_ids() {
+    local manifest_path="$1"
+    jq -r '.skills[].id' "$manifest_path"
+}
+
+get_skill_by_id() {
+    local manifest_path="$1"
+    local skill_id="$2"
+    jq -r ".skills[] | select(.id == \"$skill_id\")" "$manifest_path"
+}
+
+skill_exists() {
+    local manifest_path="$1"
+    local skill_id="$2"
+    jq -e ".skills[] | select(.id == \"$skill_id\")" "$manifest_path" &> /dev/null
+}
+
+filter_skills() {
+    local manifest_path="$1"
+    local mode="$2"
+    local skill_list="$3"
+    
+    local result=""
+    IFS=',' read -ra SKILLS_ARRAY <<< "$skill_list"
+    
+    for skill_id in "${SKILLS_ARRAY[@]}"; do
+        if ! skill_exists "$manifest_path" "$skill_id"; then
+            echo "Invalid skill ID: $skill_id" >&2
+            result="invalid"
+        fi
+    done
+    
+    if [[ "$result" == "invalid" ]]; then
+        return 1
+    fi
+    
+    if [[ "$mode" == "include" ]]; then
+        jq -r "[.skills[] | select(.id | IN(\"${SKILLS_ARRAY[@]}\"))]" "$manifest_path"
+    else
+        jq -r "[.skills[] | select(.id | IN(\"${SKILLS_ARRAY[@]}\") | not)]" "$manifest_path"
+    fi
+}
+
+get_default_skills() {
+    local manifest_path="$1"
+    jq -r '[.skills[] | select(.required == false)]' "$manifest_path"
+}

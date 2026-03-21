@@ -140,3 +140,90 @@ Examples:
 
 "@
 }
+
+function Get-SkillsManifest {
+    param([string]$ManifestPath)
+    
+    if (-not (Test-Path $ManifestPath)) {
+        Write-Err "skills-manifest.json not found at $ManifestPath"
+        return $null
+    }
+    
+    try {
+        $content = Get-Content $ManifestPath -Raw | ConvertFrom-Json
+        return $content
+    } catch {
+        Write-Err "Failed to parse skills-manifest.json: $_"
+        return $null
+    }
+}
+
+function Test-SkillExists {
+    param([object]$Manifest, [string]$SkillId)
+    
+    $skill = $Manifest.skills | Where-Object { $_.id -eq $SkillId }
+    return $null -ne $skill
+}
+
+function Get-SkillById {
+    param([object]$Manifest, [string]$SkillId)
+    
+    return $Manifest.skills | Where-Object { $_.id -eq $SkillId }
+}
+
+function Get-FilteredSkills {
+    param(
+        [object]$Manifest,
+        [string]$Mode,
+        [string[]]$SkillIds
+    )
+    
+    foreach ($id in $SkillIds) {
+        if (-not (Test-SkillExists -Manifest $Manifest -SkillId $id)) {
+            Write-Err "Invalid skill ID: $id"
+            return $null
+        }
+    }
+    
+    if ($Mode -eq "include") {
+        return $Manifest.skills | Where-Object { $_.id -in $SkillIds }
+    } else {
+        return $Manifest.skills | Where-Object { $_.id -notin $SkillIds }
+    }
+}
+
+function Install-Skill {
+    param(
+        [string]$OpencodeDir,
+        [string]$SkillId,
+        [string]$Source,
+        [string]$Path,
+        [string]$RepoRoot
+    )
+    
+    $skillDir = Join-Path $OpencodeDir "skills\$SkillId"
+    New-Item -ItemType Directory -Force -Path $skillDir | Out-Null
+    
+    switch ($Source) {
+        "local" {
+            $srcPath = Join-Path $RepoRoot "configs\opencode\$Path"
+            if (Test-Path $srcPath) {
+                if ((Get-Item $srcPath).PSIsContainer) {
+                    Copy-Item -Path "$srcPath\*" -Destination $skillDir -Recurse -Force
+                } else {
+                    Copy-Item -Path $srcPath -Destination "$skillDir\SKILL.md" -Force
+                }
+                Write-Info "Installed skill: $SkillId (local)"
+            }
+        }
+        "url" {
+            Write-Info "Downloading skill: $SkillId from $Path"
+            try {
+                Invoke-WebRequest -Uri $Path -OutFile "$skillDir\SKILL.md" -UseBasicParsing
+                Write-Info "Installed skill: $SkillId (url)"
+            } catch {
+                Write-Err "Failed to download skill $SkillId from $Path"
+            }
+        }
+    }
+}
