@@ -122,7 +122,6 @@ jobs:
           
           mkdir -p dist
           mv engram_* dist/
-          mv engram_windows_*.exe dist/
           
           tar -czf dist/engram_linux_amd64.tar.gz -C dist engram_linux_amd64
           tar -czf dist/engram_linux_arm64.tar.gz -C dist engram_linux_arm64
