@@ -48,7 +48,14 @@ function Install-LazyVim {
         Write-Success "Copied nvim config to $nvimDir"
     }
 
+    # Configure XDG_CONFIG_HOME for Windows
+    Write-Info "Configuring XDG_CONFIG_HOME..."
+    $xdgPath = "$env:USERPROFILE\.config"
+    [System.Environment]::SetEnvironmentVariable("XDG_CONFIG_HOME", $xdgPath, "User")
+    Write-Success "XDG_CONFIG_HOME set to: $xdgPath"
+
     Write-Info "To complete LazyVim setup, run 'nvim' and wait for plugin installation."
+    Write-Info "IMPORTANT: Restart your terminal for XDG_CONFIG_HOME to take effect."
     Write-Success "LazyVim installation complete"
 }
 
