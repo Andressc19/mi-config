@@ -11,7 +11,7 @@ import (
 func RenderInstalling(m *Model) string {
 	var s strings.Builder
 
-	s.WriteString(TitleStyle.Render("🚀 Installing mi-config"))
+	s.WriteString(RosePineStyle.Title.Render("🚀 Installing mi-config"))
 	s.WriteString("\n\n")
 
 	for i, step := range m.Steps {
@@ -21,19 +21,19 @@ func RenderInstalling(m *Model) string {
 		switch step.Status {
 		case StatusPending:
 			icon = "○"
-			style = MutedStyle
+			style = RosePineStyle.Muted
 		case StatusRunning:
 			icon = spinnerFrames[m.SpinnerFrame%len(spinnerFrames)]
-			style = WarningStyle
+			style = RosePineStyle.Warning
 		case StatusDone:
 			icon = "✓"
-			style = SuccessStyle
+			style = RosePineStyle.Success
 		case StatusFailed:
 			icon = "✗"
-			style = ErrorStyle
+			style = RosePineStyle.Error
 		case StatusSkipped:
 			icon = "⊘"
-			style = MutedStyle
+			style = RosePineStyle.Muted
 		}
 
 		line := fmt.Sprintf("%s %s", icon, step.Name)
@@ -41,18 +41,18 @@ func RenderInstalling(m *Model) string {
 		s.WriteString("\n")
 
 		if i == m.CurrentStep && step.Status == StatusRunning {
-			s.WriteString(MutedStyle.Render("   " + step.Description))
+			s.WriteString(RosePineStyle.Muted.Render("   " + step.Description))
 			s.WriteString("\n")
 		}
 	}
 
 	if m.ShowDetails && len(m.LogLines) > 0 {
 		s.WriteString("\n")
-		s.WriteString(BoxStyle.Render(strings.Join(m.LogLines[maxInt(0, len(m.LogLines)-10):], "\n")))
+		s.WriteString(RosePineStyle.Box.Render(strings.Join(m.LogLines[maxInt(0, len(m.LogLines)-10):], "\n")))
 	}
 
 	s.WriteString("\n")
-	s.WriteString(HelpStyle.Render("[d] toggle details"))
+	s.WriteString(RosePineStyle.Help.Render("[d] toggle details"))
 
 	return s.String()
 }

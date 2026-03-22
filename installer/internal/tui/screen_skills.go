@@ -14,9 +14,9 @@ func RenderSkills(m *Model) string {
 	s.WriteString(m.renderStepProgressSkills())
 	s.WriteString("\n\n")
 
-	s.WriteString(TitleStyle.Render(m.GetScreenTitle()))
+	s.WriteString(RosePineStyle.Title.Render(m.GetScreenTitle()))
 	s.WriteString("\n")
-	s.WriteString(MutedStyle.Render(m.GetScreenDescription()))
+	s.WriteString(RosePineStyle.Muted.Render(m.GetScreenDescription()))
 	s.WriteString("\n\n")
 
 	sddSkills := []SkillChoice{}
@@ -30,7 +30,7 @@ func RenderSkills(m *Model) string {
 	}
 
 	if len(sddSkills) > 0 {
-		s.WriteString(MutedStyle.Render("SDD Workflow"))
+		s.WriteString(RosePineStyle.Muted.Render("SDD Workflow"))
 		s.WriteString("\n")
 		for i, skill := range sddSkills {
 			checkbox := "[ ]"
@@ -45,10 +45,10 @@ func RenderSkills(m *Model) string {
 				}
 			}
 			cursor := "  "
-			style := UnselectedStyle
+			style := RosePineStyle.Unselected
 			if globalIdx == m.Cursor {
 				cursor = "▸ "
-				style = SelectedStyle
+				style = RosePineStyle.Selected
 			}
 			s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, skill.Name)))
 			s.WriteString("\n")
@@ -57,7 +57,7 @@ func RenderSkills(m *Model) string {
 	}
 
 	if len(utilities) > 0 {
-		s.WriteString(MutedStyle.Render("Utilities"))
+		s.WriteString(RosePineStyle.Muted.Render("Utilities"))
 		s.WriteString("\n")
 		startIdx := len(sddSkills)
 		for i, skill := range utilities {
@@ -73,10 +73,10 @@ func RenderSkills(m *Model) string {
 				}
 			}
 			cursor := "  "
-			style := UnselectedStyle
+			style := RosePineStyle.Unselected
 			if globalIdx == m.Cursor {
 				cursor = "▸ "
-				style = SelectedStyle
+				style = RosePineStyle.Selected
 			}
 			s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, skill.Name)))
 			s.WriteString("\n")
@@ -84,9 +84,9 @@ func RenderSkills(m *Model) string {
 		s.WriteString("\n")
 	}
 
-	s.WriteString(MutedStyle.Render("Use [Space] to toggle, [a] Select All, [n] Deselect All"))
+	s.WriteString(RosePineStyle.Muted.Render("Use [Space] to toggle, [a] Select All, [n] Deselect All"))
 	s.WriteString("\n")
-	s.WriteString(HelpStyle.Render("↑/k up • ↓/j down • [Space] toggle • [a] select all • [n] deselect all • [Enter] continue • [Esc] back"))
+	s.WriteString(RosePineStyle.Help.Render("↑/k up • ↓/j down • [Space] toggle • [a] select all • [n] deselect all • [Enter] continue • [Esc] back"))
 
 	return s.String()
 }
@@ -100,16 +100,16 @@ func (m *Model) renderStepProgressSkills() string {
 	for i, step := range steps {
 		var style lipgloss.Style
 		if i < currentIdx {
-			style = StepDoneStyle
+			style = RosePineStyle.StepDone
 			parts = append(parts, style.Render("✓ "+step))
 		} else if i == currentIdx {
-			style = StepActiveStyle
+			style = RosePineStyle.StepActive
 			parts = append(parts, style.Render("● "+step))
 		} else {
-			style = StepPendingStyle
+			style = RosePineStyle.StepPending
 			parts = append(parts, style.Render("○ "+step))
 		}
 	}
 
-	return strings.Join(parts, MutedStyle.Render(" → "))
+	return strings.Join(parts, RosePineStyle.Muted.Render(" → "))
 }

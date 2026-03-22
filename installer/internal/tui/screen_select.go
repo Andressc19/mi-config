@@ -13,25 +13,25 @@ func RenderSelect(m *Model) string {
 	s.WriteString(m.renderStepProgress())
 	s.WriteString("\n\n")
 
-	s.WriteString(TitleStyle.Render(m.GetScreenTitle()))
+	s.WriteString(RosePineStyle.Title.Render(m.GetScreenTitle()))
 	s.WriteString("\n")
-	s.WriteString(MutedStyle.Render(m.GetScreenDescription()))
+	s.WriteString(RosePineStyle.Muted.Render(m.GetScreenDescription()))
 	s.WriteString("\n\n")
 
 	options := m.GetCurrentOptions()
 	for i, opt := range options {
 		cursor := "  "
-		style := UnselectedStyle
+		style := RosePineStyle.Unselected
 		if i == m.Cursor {
 			cursor = "▸ "
-			style = SelectedStyle
+			style = RosePineStyle.Selected
 		}
 		s.WriteString(style.Render(cursor + opt))
 		s.WriteString("\n")
 	}
 
 	s.WriteString("\n")
-	s.WriteString(HelpStyle.Render("↑/k up • ↓/j down • [Enter] select • [Esc] back"))
+	s.WriteString(RosePineStyle.Help.Render("↑/k up • ↓/j down • [Enter] select • [Esc] back"))
 
 	return s.String()
 }
@@ -54,16 +54,16 @@ func (m *Model) renderStepProgress() string {
 	for i, step := range steps {
 		var style lipgloss.Style
 		if i < currentIdx {
-			style = StepDoneStyle
+			style = RosePineStyle.StepDone
 			parts = append(parts, style.Render(" "+step))
 		} else if i == currentIdx {
-			style = StepActiveStyle
+			style = RosePineStyle.StepActive
 			parts = append(parts, style.Render("● "+step))
 		} else {
-			style = StepPendingStyle
+			style = RosePineStyle.StepPending
 			parts = append(parts, style.Render("○ "+step))
 		}
 	}
 
-	return strings.Join(parts, MutedStyle.Render(" → "))
+	return strings.Join(parts, RosePineStyle.Muted.Render(" → "))
 }

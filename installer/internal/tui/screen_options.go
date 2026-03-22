@@ -12,9 +12,9 @@ func RenderOptions(m *Model) string {
 	s.WriteString(m.renderStepProgress())
 	s.WriteString("\n\n")
 
-	s.WriteString(TitleStyle.Render(m.GetScreenTitle()))
+	s.WriteString(RosePineStyle.Title.Render(m.GetScreenTitle()))
 	s.WriteString("\n")
-	s.WriteString(MutedStyle.Render(m.GetScreenDescription()))
+	s.WriteString(RosePineStyle.Muted.Render(m.GetScreenDescription()))
 	s.WriteString("\n\n")
 
 	options := []struct {
@@ -32,23 +32,23 @@ func RenderOptions(m *Model) string {
 	for i, opt := range options {
 		checkbox := "[ ]"
 		cursor := "  "
-		style := UnselectedStyle
+		style := RosePineStyle.Unselected
 		if opt.Selected {
 			checkbox = "[✓]"
-			style = SelectedStyle
+			style = RosePineStyle.Selected
 		}
 		if i == m.Cursor {
 			cursor = "▸ "
-			style = SelectedStyle
+			style = RosePineStyle.Selected
 		}
 		s.WriteString(style.Render(fmt.Sprintf("%s%s %s", cursor, checkbox, opt.Name)))
 		s.WriteString("\n")
 	}
 
 	s.WriteString("\n")
-	s.WriteString(MutedStyle.Render("Use [Space] to toggle, [Enter] to continue"))
+	s.WriteString(RosePineStyle.Muted.Render("Use [Space] to toggle, [Enter] to continue"))
 	s.WriteString("\n")
-	s.WriteString(HelpStyle.Render("↑/k up • ↓/j down • [Space] toggle • [Enter] continue • [Esc] back"))
+	s.WriteString(RosePineStyle.Help.Render("↑/k up • ↓/j down • [Space] toggle • [Enter] continue • [Esc] back"))
 
 	return s.String()
 }

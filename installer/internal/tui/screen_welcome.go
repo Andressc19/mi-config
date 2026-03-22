@@ -9,7 +9,7 @@ import (
 func RenderWelcome(m *Model) string {
 	var s strings.Builder
 
-	s.WriteString(LogoStyle.Render(logo))
+	s.WriteString(RosePineStyle.Logo.Render(logo))
 	s.WriteString("\n\n")
 
 	info := fmt.Sprintf("Detected: %s", m.SystemInfo.OSName)
@@ -19,12 +19,12 @@ func RenderWelcome(m *Model) string {
 	if m.SystemInfo.HasGit {
 		info += " | Git ✓"
 	}
-	s.WriteString(InfoStyle.Render(info))
+	s.WriteString(RosePineStyle.Info.Render(info))
 	s.WriteString("\n\n")
 
-	s.WriteString(SubtitleStyle.Render(banner))
+	s.WriteString(RosePineStyle.Subtitle.Render(banner))
 	s.WriteString("\n\n")
-	s.WriteString(HelpStyle.Render("Press [Enter] to start • [q] to quit"))
+	s.WriteString(RosePineStyle.Help.Render("Press [Enter] to start • [q] to quit"))
 
 	return CenterBoth(s.String(), m.Width, m.Height)
 }
