@@ -7,8 +7,31 @@ on:
     branches: [ main ]
 
 jobs:
+  test-repo-structure:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make verify script executable
+        run: chmod +x scripts/verify-install.sh
+
+      - name: Verify all installer files
+        run: ./scripts/verify-install.sh --all
+
+      - name: Verify individual components
+        run: |
+          ./scripts/verify-install.sh --opencode
+          ./scripts/verify-install.sh --nvim
+          ./scripts/verify-install.sh --docker
+          ./scripts/verify-install.sh --shell
+          ./scripts/verify-install.sh --engram
+          ./scripts/verify-install.sh --installer
+
   test-dry-run:
     runs-on: ubuntu-latest
+    needs: test-repo-structure
     
     steps:
       - name: Checkout
